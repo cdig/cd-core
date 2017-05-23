@@ -44,6 +44,10 @@ assetPacks = "{cd-module,pressure,svga}"
 # Assets that should just be copied straight from source to public with no processing
 basicAssetTypes = "cdig,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,txt,woff,woff2"
 
+dev_paths =
+  gulp: "dev/*/gulpfile.coffee"
+  watch: "dev/**/{dist,pack}/**/*"
+
 module_paths =
   basicAssets: [
     "node_modules/#{assetPacks}/pack/**/*.{#{basicAssetTypes}}"
@@ -53,7 +57,6 @@ module_paths =
     "node_modules/#{assetPacks}/pack/**/*.coffee"
     "source/**/*.coffee"
   ]
-  dev: "dev/**/{dist,pack}/**/*"
   kit:
     libs: [
       "node_modules/take-and-make/dist/take-and-make.js"
@@ -79,9 +82,6 @@ module_paths =
 
 svga_paths =
   coffee: "source/**/*.coffee"
-  dev:
-    gulp: "dev/*/gulpfile.coffee"
-    watch: "dev/**/dist/**/*"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
     "node_modules/pressure/dist/pressure.js"
@@ -411,7 +411,7 @@ gulp.task "dev", gulp_shell.task [
 
 
 gulp.task "dev:watch", (cb)->
-  gulp.src paths.dev.gulp
+  gulp.src dev_paths.gulp
     .on "data", (chunk)->
       folder = chunk.path.replace "/gulpfile.coffee", ""
       process.chdir folder
@@ -461,12 +461,12 @@ gulp.task "serve", ()->
 
 gulp.task "module:watch", (cb)->
   watching = true
-  gulp.watch paths.basicAssets, gulp.series "module:basicAssets"
-  gulp.watch paths.coffee, gulp.series "module:coffee"
-  gulp.watch paths.dev, gulp.series "dev"
-  gulp.watch paths.kit.watch, gulp.series "module:kit", "reload"
-  gulp.watch paths.scss, gulp.series "module:scss"
-  gulp.watch paths.svg, gulp.series "module:svg", "reload"
+  gulp.watch module_paths.basicAssets, gulp.series "module:basicAssets"
+  gulp.watch module_paths.coffee, gulp.series "module:coffee"
+  gulp.watch dev_paths.watch, gulp.series "dev"
+  gulp.watch module_paths.kit.watch, gulp.series "module:kit", "reload"
+  gulp.watch module_paths.scss, gulp.series "module:scss"
+  gulp.watch module_paths.svg, gulp.series "module:svg", "reload"
   cb()
 
 
@@ -487,11 +487,11 @@ gulp.task "module:dev",
 
 gulp.task "svga:watch", (cb)->
   watching = true
-  gulp.watch paths.dev.watch, gulp.series "dev"
-  gulp.watch paths.coffee, gulp.series "svga:coffee:source"
-  gulp.watch paths.libs, gulp.series "svga:wrap-svg", "reload"
-  gulp.watch paths.wrapper, gulp.series "svga:wrap-svg", "reload"
-  gulp.watch paths.svg, gulp.series "svga:beautify-svg", "svga:wrap-svg", "reload"
+  gulp.watch dev_paths.watch, gulp.series "dev"
+  gulp.watch svga_paths.coffee, gulp.series "svga:coffee:source"
+  gulp.watch svga_paths.libs, gulp.series "svga:wrap-svg", "reload"
+  gulp.watch svga_paths.wrapper, gulp.series "svga:wrap-svg", "reload"
+  gulp.watch svga_paths.svg, gulp.series "svga:beautify-svg", "svga:wrap-svg", "reload"
   cb()
 
 
