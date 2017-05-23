@@ -2,6 +2,7 @@ beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
 del = require "del"
+glob = require "glob"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
 gulp_changed = require "gulp-changed"

@@ -10,6 +10,7 @@
     "chalk": "",
     "coffee-script": "",
     "del": "",
+    "glob": "",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-autoprefixer": "",
     "gulp-changed": "",
