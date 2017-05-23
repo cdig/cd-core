@@ -269,13 +269,6 @@ gulp.task "module:coffee", ()->
     .pipe notify "Coffee"
 
 
-gulp.task "module:svgas", ()->
-  merge glob.sync('source/svga/*').map (folder)->
-    gulp.src "#{folder}/*"
-      .pipe gulp_concat path: "#{path.basename(folder)}.txt"
-      .pipe gulp.dest "public/svga"
-
-
 gulp.task "module:kit:compile", ()->
   libs = gulp.src module_paths.kit.libs
     .pipe gulp.dest "public/_libs"
@@ -345,8 +338,8 @@ gulp.task "module:svg", ()->
 
 
 # This task MUST be idempotent, since it overwrites the original file
-gulp.task "svga:beautify-svg", ()->
-  fixFlashWeirdness gulp.src svga_paths.svg
+svga_beautify_svg = (cwd = "")->
+  fixFlashWeirdness gulp.src cwd + svga_paths.svg
     .pipe changed "source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .on "error", logAndKillError
@@ -359,8 +352,8 @@ gulp.task "svga:beautify-svg", ()->
     .pipe gulp.dest "source"
 
 
-gulp.task "svga:coffee:source", ()->
-  gulp.src svga_paths.coffee
+svga_coffee_source = (cwd = "")->
+  gulp.src cwd + svga_paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "source.coffee"
@@ -373,13 +366,13 @@ gulp.task "svga:coffee:source", ()->
     .pipe notify "Coffee"
 
 
-gulp.task "svga:wrap-svg", ()->
+svga_wrap_svg = (cwd = "")->
   libs = gulp.src svga_paths.libs
     .pipe gulp.dest "public/_libs"
   svgSource = gulp.src svga_paths.svg
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
-  gulp.src svga_paths.wrapper
+  gulp.src cwd + svga_paths.wrapper
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
     .pipe gulp_inject libs, name: "libs", ignorePath: "/public/", addRootSlash: false
     .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
@@ -392,6 +385,11 @@ gulp.task "svga:wrap-svg", ()->
     .on "error", logAndKillError
     .pipe gulp.dest "public"
     .pipe notify "SVG"
+
+
+gulp.task "svga:beautify-svg", svga_beautify_svg
+gulp.task "svga:coffee:source", svga_coffee_source
+gulp.task "svga:wrap-svg", svga_wrap_svg
 
 
 # TASKS: SYSTEM ###################################################################################
@@ -457,6 +455,22 @@ gulp.task "serve", ()->
 
 
 # MODULE MAIN #####################################################################################
+
+
+gulp.task "module:svga:beautify", ()->
+  merge glob.sync('source/svga/*').map (folder)->
+    svga_beautify_svg folder
+
+gulp.task "module:svga:coffee", ()->
+  merge glob.sync('source/svga/*').map (folder)->
+    svga_coffee_source folder
+
+gulp.task "module:svga:wrap", ()->
+  merge glob.sync('source/svga/*').map (folder)->
+    svga_wrap_svg folder
+
+gulp.task "module:svga",
+  gulp.series "module:svga:beautify", "module:svga:coffee", "module:svga:wrap"
 
 
 gulp.task "module:watch", (cb)->
