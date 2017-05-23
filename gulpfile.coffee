@@ -247,7 +247,7 @@ fixFlashWeirdness = (src)->
 
 # Copy all basic assets in source and asset packs to public
 gulp.task "module:basicAssets", ()->
-  gulp.src paths.basicAssets
+  gulp.src module_paths.basicAssets
     .pipe gulp_rename stripPack
     .pipe changed()
     .pipe gulp.dest "public"
@@ -256,7 +256,7 @@ gulp.task "module:basicAssets", ()->
 
 # Compile coffee in source and asset packs, with sourcemaps in dev and uglify in prod
 gulp.task "module:coffee", ()->
-  gulp.src paths.coffee
+  gulp.src module_paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "scripts.coffee"
@@ -277,11 +277,11 @@ gulp.task "module:svgas", ()->
 
 
 gulp.task "module:kit:compile", ()->
-  libs = gulp.src paths.kit.libs
+  libs = gulp.src module_paths.kit.libs
     .pipe gulp.dest "public/_libs"
-  packHtml = gulp.src paths.kit.packHtml
+  packHtml = gulp.src module_paths.kit.packHtml
     .pipe gulp_natural_sort()
-  gulp.src paths.kit.index
+  gulp.src module_paths.kit.index
     .pipe gulp_kit()
     .on "error", logAndKillError
     .pipe gulp_inject libs, name: "libs", ignorePath: "/public/", addRootSlash: false
@@ -292,7 +292,7 @@ gulp.task "module:kit:compile", ()->
 
 
 gulp.task "module:kit:fix", ()->
-  gulp.src paths.kit.index
+  gulp.src module_paths.kit.index
     .pipe gulp_replace "bower_components", "node_modules"
     .pipe gulp.dest "source"
 
@@ -303,7 +303,7 @@ gulp.task "module:kit",
 
 # Compile scss in source and asset packs, with sourcemaps in dev and autoprefixer in prod
 gulp.task "module:scss", ()->
-  gulp.src paths.scss
+  gulp.src module_paths.scss
     # .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
@@ -324,7 +324,7 @@ gulp.task "module:scss", ()->
 
 # Clean and minify static SVG files in source and asset packs
 gulp.task "module:svg", ()->
-  gulp.src paths.svg
+  gulp.src module_paths.svg
     .on "error", logAndKillError
     .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
     .pipe gulp_replace "Lato_Bold_Bold", "Lato, sans-serif"
@@ -337,7 +337,7 @@ gulp.task "module:svg", ()->
     .pipe gulp_replace "kerning=\"0\"", ""
     .pipe gulp_replace "xml:space=\"preserve\"", ""
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the perf cost
-    .pipe gulp_svgmin (file)-> {full: true, plugins: svg_plugins}
+    .pipe gulp_svgmin (file)-> {full: true, plugins: svg_plugins.concat(cd_module_svg_plugins)}
     .pipe gulp.dest "public"
 
 
@@ -346,7 +346,7 @@ gulp.task "module:svg", ()->
 
 # This task MUST be idempotent, since it overwrites the original file
 gulp.task "svga:beautify-svg", ()->
-  fixFlashWeirdness gulp.src paths.svg
+  fixFlashWeirdness gulp.src svga_paths.svg
     .pipe changed "source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .on "error", logAndKillError
@@ -360,7 +360,7 @@ gulp.task "svga:beautify-svg", ()->
 
 
 gulp.task "svga:coffee:source", ()->
-  gulp.src paths.coffee
+  gulp.src svga_paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "source.coffee"
@@ -374,12 +374,12 @@ gulp.task "svga:coffee:source", ()->
 
 
 gulp.task "svga:wrap-svg", ()->
-  libs = gulp.src paths.libs
+  libs = gulp.src svga_paths.libs
     .pipe gulp.dest "public/_libs"
-  svgSource = gulp.src paths.svg
+  svgSource = gulp.src svga_paths.svg
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
-  gulp.src paths.wrapper
+  gulp.src svga_paths.wrapper
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
     .pipe gulp_inject libs, name: "libs", ignorePath: "/public/", addRootSlash: false
     .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
