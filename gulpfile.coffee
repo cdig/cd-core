@@ -333,7 +333,7 @@ gulp.task "cd-module:svg", ()->
 
 
 # This task MUST be idempotent, since it overwrites the original file
-svga_beautify_svg = (cwd = ".")->
+svga_beautify_svg = (cwd)-> ()->
   fixFlashWeirdness gulp.src cwd + "/" + svga_paths.svg
     .pipe changed cwd + "/source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
@@ -347,8 +347,7 @@ svga_beautify_svg = (cwd = ".")->
     .pipe gulp.dest cwd + "/source"
 
 
-svga_coffee_source = (cwd = ".")->
-  svgName = path.basename(cwd)
+svga_coffee_source = (cwd, svgName, dest)-> ()->
   gulp.src cwd + "/" + svga_paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
@@ -360,21 +359,20 @@ svga_coffee_source = (cwd = ".")->
       path.basename = svgName
       path
     .pipe emitMaps()
-    .pipe gulp.dest "public/svga/"
+    .pipe gulp.dest dest
     .pipe stream "**/*.js"
     .pipe notify "Coffee"
 
 
-svga_wrap_svg = (cwd = ".")->
-  svgName = path.basename(cwd)
+svga_wrap_svg = (cwd, svgName, dest)-> ()->
   libs = gulp.src svga_paths.libs
-    .pipe gulp.dest "public/svga/_libs"
+    .pipe gulp.dest "#{dest}/_libs"
   svgSource = gulp.src cwd + "/" + svga_paths.svg
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
   gulp.src svga_paths.wrapper
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
-    .pipe gulp_inject libs, name: "libs", ignorePath: "/public/svga/", addRootSlash: false
+    .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
     .pipe gulp_replace "<script defer src=\"source.js", "<script defer src=\"#{svgName}.js"
     .pipe cond prod, ()-> gulp_htmlmin
@@ -387,13 +385,13 @@ svga_wrap_svg = (cwd = ".")->
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
-    .pipe gulp.dest "public/svga/"
+    .pipe gulp.dest dest
     .pipe notify "SVG"
 
 
-gulp.task "svga:beautify-svg", svga_beautify_svg
-gulp.task "svga:coffee:source", svga_coffee_source
-gulp.task "svga:wrap-svg", svga_wrap_svg
+gulp.task "svga:beautify-svg", svga_beautify_svg "."
+gulp.task "svga:coffee:source", svga_coffee_source ".", "index", "public"
+gulp.task "svga:wrap-svg", svga_wrap_svg ".", "index", "public"
 
 
 # TASKS: SYSTEM ###################################################################################
@@ -458,20 +456,20 @@ gulp.task "serve", ()->
     watchOptions: ignoreInitial: true
 
 
-# MODULE MAIN #####################################################################################
+# TASKS: MODULE MAIN ##############################################################################
 
 
 gulp.task "cd-module:svga:beautify", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_beautify_svg folder
+    svga_beautify_svg(folder)()
 
 gulp.task "cd-module:svga:coffee", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_coffee_source folder
+    svga_coffee_source(folder, path.basename(folder), "public/svga/")()
 
 gulp.task "cd-module:svga:wrap", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_wrap_svg folder
+    svga_wrap_svg(folder, path.basename(folder), "public/svga/")()
 
 gulp.task "cd-module:svga",
   gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
@@ -499,9 +497,10 @@ gulp.task "cd-module:prod",
 
 gulp.task "cd-module:dev",
   gulp.series "cd-module:recompile", "cd-module:watch", "serve"
+  # gulp.series "dev:watch", "cd-module:recompile", "cd-module:watch", "serve"
 
 
-# SVGA MAIN #######################################################################################
+# TASKS: SVGA MAIN ################################################################################
 
 
 gulp.task "svga:watch", (cb)->
@@ -523,4 +522,5 @@ gulp.task "svga:prod",
 
 
 gulp.task "svga:dev",
-  gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
+  gulp.series "svga:recompile", "svga:watch", "serve"
+  # gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
