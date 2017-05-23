@@ -245,7 +245,7 @@ fixFlashWeirdness = (src)->
 
 
 # Copy all basic assets in source and asset packs to public
-gulp.task "module:basicAssets", ()->
+gulp.task "cd-module:basicAssets", ()->
   gulp.src module_paths.basicAssets
     .pipe gulp_rename stripPack
     .pipe changed()
@@ -254,7 +254,7 @@ gulp.task "module:basicAssets", ()->
 
 
 # Compile coffee in source and asset packs, with sourcemaps in dev and uglify in prod
-gulp.task "module:coffee", ()->
+gulp.task "cd-module:coffee", ()->
   gulp.src module_paths.coffee
     .pipe gulp_natural_sort()
     .pipe initMaps()
@@ -268,7 +268,7 @@ gulp.task "module:coffee", ()->
     .pipe notify "Coffee"
 
 
-gulp.task "module:kit:compile", ()->
+gulp.task "cd-module:kit:compile", ()->
   libs = gulp.src module_paths.kit.libs
     .pipe gulp.dest "public/_libs"
   packHtml = gulp.src module_paths.kit.packHtml
@@ -283,14 +283,14 @@ gulp.task "module:kit:compile", ()->
     .pipe notify "HTML"
 
 
-gulp.task "module:kit:fix", ()->
+gulp.task "cd-module:kit:fix", ()->
   gulp.src module_paths.kit.index
     .pipe gulp_replace "bower_components", "node_modules"
     .pipe gulp.dest "source"
 
 
 # Compile scss in source and asset packs, with sourcemaps in dev and autoprefixer in prod
-gulp.task "module:scss", ()->
+gulp.task "cd-module:scss", ()->
   gulp.src module_paths.scss
     .pipe gulp_natural_sort()
     .pipe initMaps()
@@ -311,7 +311,7 @@ gulp.task "module:scss", ()->
 
 
 # Clean and minify static SVG files in source and asset packs
-gulp.task "module:svg", ()->
+gulp.task "cd-module:svg", ()->
   gulp.src module_paths.svg
     .on "error", logAndKillError
     .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
@@ -461,44 +461,44 @@ gulp.task "serve", ()->
 # MODULE MAIN #####################################################################################
 
 
-gulp.task "module:svga:beautify", ()->
+gulp.task "cd-module:svga:beautify", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
     svga_beautify_svg folder
 
-gulp.task "module:svga:coffee", ()->
+gulp.task "cd-module:svga:coffee", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
     svga_coffee_source folder
 
-gulp.task "module:svga:wrap", ()->
+gulp.task "cd-module:svga:wrap", ()->
   merge_stream glob.sync(module_paths.svga.projects).map (folder)->
     svga_wrap_svg folder
 
-gulp.task "module:svga",
-  gulp.series "module:svga:beautify", "module:svga:coffee", "module:svga:wrap"
+gulp.task "cd-module:svga",
+  gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
 
 
-gulp.task "module:watch", (cb)->
+gulp.task "cd-module:watch", (cb)->
   watching = true
-  gulp.watch module_paths.basicAssets, gulp.series "module:basicAssets"
-  gulp.watch module_paths.coffee, gulp.series "module:coffee"
+  gulp.watch module_paths.basicAssets, gulp.series "cd-module:basicAssets"
+  gulp.watch module_paths.coffee, gulp.series "cd-module:coffee"
   gulp.watch dev_paths.watch, gulp.series "dev"
-  gulp.watch module_paths.kit.watch, gulp.series "module:kit:compile", "reload"
-  gulp.watch module_paths.scss, gulp.series "module:scss"
-  gulp.watch module_paths.svg, gulp.series "module:svg", "reload"
-  gulp.watch module_paths.svga.watch, gulp.series "module:svga", "reload"
+  gulp.watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
+  gulp.watch module_paths.scss, gulp.series "cd-module:scss"
+  gulp.watch module_paths.svg, gulp.series "cd-module:svg", "reload"
+  gulp.watch module_paths.svga.watch, gulp.series "cd-module:svga", "reload"
   cb()
 
 
-gulp.task "module:recompile",
-  gulp.series "del:public", "dev", "module:kit:fix", "module:basicAssets", "module:coffee", "module:scss", "module:svg", "module:svga", "module:kit:compile"
+gulp.task "cd-module:recompile",
+  gulp.series "del:public", "dev", "cd-module:kit:fix", "cd-module:basicAssets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga", "cd-module:kit:compile"
 
 
-gulp.task "module:prod",
-  gulp.series "prod:setup", "module:recompile", "del:deploy", "rev"
+gulp.task "cd-module:prod",
+  gulp.series "prod:setup", "cd-module:recompile", "del:deploy", "rev"
 
 
-gulp.task "module:dev",
-  gulp.series "module:recompile", "module:watch", "serve"
+gulp.task "cd-module:dev",
+  gulp.series "cd-module:recompile", "cd-module:watch", "serve"
 
 
 # SVGA MAIN #######################################################################################
