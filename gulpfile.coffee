@@ -40,7 +40,7 @@ watching = false
 
 
 # Assets that should just be copied straight from source to public with no processing
-basicAssetTypes = "cdig,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,txt,woff,woff2"
+basicAssetTypes = "gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf"
 
 dev_paths =
   gulp: "dev/*/gulpfile.coffee"
@@ -68,8 +68,6 @@ module_paths =
       "node_modules/cd-module/pack/**/*.{kit,html}"
     ]
   scss: [
-    "node_modules/cd-module/pack/**/vars.scss"
-    "source/**/vars.scss"
     "node_modules/cd-module/pack/**/*.scss"
     "source/**/*.scss"
   ]
@@ -155,7 +153,7 @@ svg_plugins = [
   # {removeStyleElement: true} # disabled by default
 ]
 
-cd_module_svg_plugins = [
+cd_module_svg_plugins = svg_plugins.concat [
   {removeUnknownsAndDefaults: true}
   {removeNonInheritableGroupAttrs: true}
   {removeUselessStrokeAndFill: true}
@@ -294,7 +292,7 @@ gulp.task "module:kit:fix", ()->
 # Compile scss in source and asset packs, with sourcemaps in dev and autoprefixer in prod
 gulp.task "module:scss", ()->
   gulp.src module_paths.scss
-    # .pipe gulp_natural_sort()
+    .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
@@ -327,7 +325,7 @@ gulp.task "module:svg", ()->
     .pipe gulp_replace "kerning=\"0\"", ""
     .pipe gulp_replace "xml:space=\"preserve\"", ""
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the perf cost
-    .pipe gulp_svgmin (file)-> {full: true, plugins: svg_plugins.concat(cd_module_svg_plugins)}
+    .pipe gulp_svgmin (file)-> {full: true, plugins: cd_module_svg_plugins}
     .pipe gulp.dest "public"
 
 
@@ -441,7 +439,7 @@ gulp.task "rev", ()->
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
         rev.replace /.*\//, ""
-      transformFilename: (file, hash)->
+      transformFilename: (file, hash)-> # Applies to the files themselves
         name = file.revHash + file.extname
         gulp_shell.task("mkdir -p deploy/index && touch deploy/index/#{name}")() if file.revPathOriginal.indexOf("/public/index.html") > 0
         name
