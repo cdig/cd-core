@@ -465,17 +465,23 @@ gulp.task "serve", ()->
 # TASKS: MODULE MAIN ##############################################################################
 
 
-gulp.task "cd-module:svga:beautify", ()->
-  merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_beautify_svg(folder)()
+gulp.task "cd-module:svga:beautify", (cb)->
+  if (svgas = glob.sync(module_paths.svga.projects)).length > 0
+    merge_stream svgas.map (folder)-> svga_beautify_svg(folder)()
+  else
+    cb()
 
-gulp.task "cd-module:svga:coffee", ()->
-  merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_coffee_source(folder, path.basename(folder), "public/svga/")()
+gulp.task "cd-module:svga:coffee", (cb)->
+  if (svgas = glob.sync(module_paths.svga.projects)).length > 0
+    merge_stream svgas.map (folder)-> svga_coffee_source(folder, path.basename(folder), "public/svga/")()
+  else
+    cb()
 
-gulp.task "cd-module:svga:wrap", ()->
-  merge_stream glob.sync(module_paths.svga.projects).map (folder)->
-    svga_wrap_svg(folder, path.basename(folder), "public/svga/")()
+gulp.task "cd-module:svga:wrap", (cb)->
+  if (svgas = glob.sync(module_paths.svga.projects)).length > 0
+    merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder), "public/svga/")()
+  else
+    cb()
 
 gulp.task "cd-module:svga",
   gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
