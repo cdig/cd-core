@@ -4,7 +4,7 @@
   "description": "Stuff shared by SVGA and cd-module",
   "license": "UNLICENSED",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "beepbeep": "",
     "browser-sync": "",
     "chalk": "",
