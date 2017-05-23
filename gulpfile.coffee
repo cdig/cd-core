@@ -154,7 +154,7 @@ svg_plugins = [
   # {removeStyleElement: true} # disabled by default
 ]
 
-cd_module_svg_plugins: [
+cd_module_svg_plugins = [
   {removeUnknownsAndDefaults: true}
   {removeNonInheritableGroupAttrs: true}
   {removeUselessStrokeAndFill: true}
