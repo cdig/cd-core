@@ -40,7 +40,7 @@ watching = false
 
 
 # Deps that conform to the Asset Pack pattern (ie: they contain a pack folder)
-assetPacks = "{cd-module,pressure,svga}"
+assetPacks = "{cd-module,pressure}"
 
 # Assets that should just be copied straight from source to public with no processing
 basicAssetTypes = "cdig,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,txt,woff,woff2"
