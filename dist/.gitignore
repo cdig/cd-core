@@ -1,7 +1,0 @@
-.DS_Store
-deploy
-dev
-node_modules
-public
-resources
-yarn.lock
