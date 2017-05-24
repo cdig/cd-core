@@ -290,7 +290,8 @@ gulp.task "cd-module:scss", ()->
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
-    .pipe gulp_replace "https://lunchboxsessions.s3.amazonaws.com/fonts", "fonts"
+    .pipe gulp_replace "https://lunchboxsessions.s3.amazonaws.com/fonts", "fonts" # v3 backwards compat
+    .pipe gulp_replace "// @import url(\"fonts/lato/lato-black.css\");", "@import url(\"fonts/lato/lato-black.css\");" # v3 backwards compat
     .pipe gulp_sass
       precision: 2
     .on "error", logAndKillError
