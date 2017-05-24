@@ -192,38 +192,26 @@ logAndKillError = (err)->
     )(err)
   @emit "end"
 
-cond = (predicate, action)->
-  if predicate
-    action()
-  else
-    # This is what we use as a noop *shrug*
-    gulp_rename (p)-> p
-
 changed = (path = "public")->
-  cond watching, ()->
-    gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
+  gulp_if watching, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
 
 stream = (glob)->
-  cond watching, ()->
-    browser_sync.stream match: glob
+  gulp_if watching, browser_sync.stream match: glob
 
 stripPack = (path)->
   path.dirname = path.dirname.replace /.*\/pack\//, ''
   path
 
 initMaps = ()->
-  cond !prod, ()->
-    gulp_sourcemaps.init()
+  gulp_if !prod, gulp_sourcemaps.init()
 
 emitMaps = ()->
-  cond !prod, ()->
-    gulp_sourcemaps.write "."
+  gulp_if !prod, gulp_sourcemaps.write "."
 
 notify = (msg)->
-  cond watching, ()->
-    gulp_notify
-      title: "👍"
-      message: msg
+  gulp_if watching, gulp_notify
+    title: "👍"
+    message: msg
 
 fixFlashWeirdness = (src)->
   src
@@ -261,7 +249,7 @@ gulp.task "cd-module:coffee", ()->
     .pipe gulp_concat "scripts.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    .pipe cond prod, ()-> gulp_uglify()
+    .pipe gulp_if prod, gulp_uglify()
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.js"
@@ -306,7 +294,7 @@ gulp.task "cd-module:scss", ()->
       outputStyle: "compressed"
       precision: 2
     .on "error", logAndKillError
-    .pipe cond prod, ()-> gulp_autoprefixer
+    .pipe gulp_if prod, gulp_autoprefixer
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
       cascade: false
       remove: false
@@ -360,7 +348,7 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe gulp_concat "source.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    .pipe cond prod, gulp_uglify
+    .pipe gulp_if prod, gulp_uglify()
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
@@ -381,7 +369,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
     .pipe gulp_replace "<script defer src=\"source.js", "<script defer src=\"#{svgName}.js"
-    .pipe cond prod, ()-> gulp_htmlmin
+    .pipe gulp_if prod, gulp_htmlmin
       collapseWhitespace: true
       collapseBooleanAttributes: true
       collapseInlineTagWhitespace: true
