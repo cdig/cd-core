@@ -41,7 +41,7 @@ watching = false
 
 
 # Assets that should just be copied straight from source to public with no processing
-basicAssetTypes = "gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,woff2"
+basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,woff2"
 
 dev_paths =
   gulp: "dev/*/gulpfile.coffee"
@@ -251,7 +251,6 @@ gulp.task "cd-module:coffee", ()->
     .pipe gulp_concat "scripts.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    # .pipe gulp_if prod, gulp_uglify()
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.js"
@@ -291,15 +290,10 @@ gulp.task "cd-module:scss", ()->
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
+    .pipe gulp_replace "https://lunchboxsessions.s3.amazonaws.com/fonts", "fonts"
     .pipe gulp_sass
-      errLogToConsole: true
-      outputStyle: "compressed"
       precision: 2
     .on "error", logAndKillError
-    .pipe gulp_if prod, gulp_autoprefixer
-      browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
-      cascade: false
-      remove: false
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.css"
@@ -358,7 +352,6 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe gulp_concat "source.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    # .pipe gulp_if prod, gulp_uglify()
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
@@ -441,6 +434,10 @@ gulp.task "rev", ()->
   js = gulp.src "public/**/*.js"
     .pipe gulp_uglify()
   css = gulp.src "public/**/*.css"
+    .pipe gulp_autoprefixer
+      browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
+      cascade: false
+      remove: false
     .pipe gulp_clean_css level: 2
   other = gulp.src ["public/**","!public/**/*.{js,css}"]
   merge_stream js, css, other
