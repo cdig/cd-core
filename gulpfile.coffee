@@ -85,9 +85,12 @@ svga_paths =
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
     "node_modules/pressure/dist/pressure.js"
+    "node_modules/svga/dist/lato-bold.woff"
+    "node_modules/svga/dist/lato-bold.woff2"
+    "node_modules/svga/dist/lato-regular.woff"
+    "node_modules/svga/dist/lato-regular.woff2"
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
-    "node_modules/svga/dist/fonts/*"
   ]
   svg: "source/**/*.svg"
   wrapper: "node_modules/svga/dist/index.html"
@@ -321,14 +324,6 @@ gulp.task "cd-module:svg", ()->
 # TASKS: SVGA COMPILATION #########################################################################
 
 
-# svga_fonts = (cwd, svgName, dest)-> ()->
-#   gulp.src svga_paths.basicAssets
-#     .pipe gulp_rename stripPack
-#     .pipe changed()
-#     .pipe gulp.dest dest
-#     .pipe stream "**/*.{#{basicAssetTypes},html}"
-
-
 # This task MUST be idempotent, since it overwrites the original file
 svga_beautify_svg = (cwd, svgName, dest)-> ()->
   fixFlashWeirdness gulp.src cwd + "/" + svga_paths.svg
@@ -385,7 +380,6 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe notify "SVG"
 
 
-# gulp.task "svga:basic-assets", svga_fonts ".", "index", "public"
 gulp.task "svga:beautify-svg", svga_beautify_svg ".", "index", "public"
 gulp.task "svga:coffee:source", svga_coffee_source ".", "index", "public"
 gulp.task "svga:wrap-svg", svga_wrap_svg ".", "index", "public"
@@ -466,12 +460,6 @@ gulp.task "serve", ()->
 
 # TASKS: MODULE MAIN ##############################################################################
 
-
-# gulp.task "cd-module:svga:basic-assets", (cb)->
-#   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-#     merge_stream svgas.map (folder)-> svga_fonts(folder, path.basename(folder), "public/svga/")()
-#   else
-#     cb()
 
 gulp.task "cd-module:svga:beautify", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
