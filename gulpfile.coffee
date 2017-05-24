@@ -434,7 +434,7 @@ gulp.task "reload", (cb)->
 gulp.task "rev", ()->
   js = gulp.src "public/**/*.js"
     .pipe gulp_uglify()
-  css = gulp.src "public/**/*.css"
+  css = gulp.src ["public/**/*.css", "!public/fonts/**/*.css"]
     .pipe gulp_autoprefixer
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
       cascade: false
