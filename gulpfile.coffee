@@ -433,7 +433,7 @@ gulp.task "rev", ()->
   css = gulp.src "public/**/*.css"
     .pipe gulp_clean_css level: 2
   other = gulp.src ["public/**","!public/**/*.{js,css}"]
-  merge js, css, other
+  merge_stream js, css, other
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
         rev.replace /.*\//, ""
