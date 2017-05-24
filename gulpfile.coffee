@@ -81,6 +81,7 @@ module_paths =
     watch: "svga/**"
 
 svga_paths =
+  basicAssets: "node_modules/svga/pack/**/*.{#{basicAssetTypes}}"
   coffee: "source/**/*.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
@@ -327,8 +328,16 @@ gulp.task "cd-module:svg", ()->
 # TASKS: SVGA COMPILATION #########################################################################
 
 
+svga_basic_assets = (cwd, svgName, dest)-> ()->
+  gulp.src svga_paths.basicAssets
+    .pipe gulp_rename stripPack
+    .pipe changed()
+    .pipe gulp.dest dest
+    .pipe stream "**/*.{#{basicAssetTypes},html}"
+
+
 # This task MUST be idempotent, since it overwrites the original file
-svga_beautify_svg = (cwd)-> ()->
+svga_beautify_svg = (cwd, svgName, dest)-> ()->
   fixFlashWeirdness gulp.src cwd + "/" + svga_paths.svg
     .pipe changed cwd + "/source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
@@ -384,7 +393,8 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe notify "SVG"
 
 
-gulp.task "svga:beautify-svg", svga_beautify_svg "."
+gulp.task "svga:basic-assets", svga_basic_assets ".", "index", "public"
+gulp.task "svga:beautify-svg", svga_beautify_svg ".", "index", "public"
 gulp.task "svga:coffee:source", svga_coffee_source ".", "index", "public"
 gulp.task "svga:wrap-svg", svga_wrap_svg ".", "index", "public"
 
@@ -459,9 +469,15 @@ gulp.task "serve", ()->
 # TASKS: MODULE MAIN ##############################################################################
 
 
+gulp.task "cd-module:svga:basic-assets", (cb)->
+  if (svgas = glob.sync(module_paths.svga.projects)).length > 0
+    merge_stream svgas.map (folder)-> svga_basic_assets(folder, path.basename(folder), "public/svga/")()
+  else
+    cb()
+
 gulp.task "cd-module:svga:beautify", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_beautify_svg(folder)()
+    merge_stream svgas.map (folder)-> svga_beautify_svg(folder, path.basename(folder), "public/svga/")()
   else
     cb()
 
