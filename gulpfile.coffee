@@ -5,6 +5,7 @@ del = require "del"
 glob = require "glob"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
+gulp_clean_css = require "gulp-clean-css"
 gulp_changed = require "gulp-changed"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
@@ -249,7 +250,7 @@ gulp.task "cd-module:coffee", ()->
     .pipe gulp_concat "scripts.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    .pipe gulp_if prod, gulp_uglify()
+    # .pipe gulp_if prod, gulp_uglify()
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.js"
@@ -348,7 +349,7 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe gulp_concat "source.coffee"
     .pipe gulp_coffee()
     .on "error", logAndKillError
-    .pipe gulp_if prod, gulp_uglify()
+    # .pipe gulp_if prod, gulp_uglify()
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
@@ -427,7 +428,12 @@ gulp.task "reload", (cb)->
 
 
 gulp.task "rev", ()->
-  gulp.src "public/**"
+  js = gulp.src "public/**/*.js"
+    .pipe gulp_uglify()
+  css = gulp.src "public/**/*.css"
+    .pipe gulp_clean_css level: 2
+  other = gulp.src ["public/**","!public/**/*.{js,css}"]
+  merge js, css, other
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
         rev.replace /.*\//, ""
