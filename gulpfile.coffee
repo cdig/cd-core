@@ -439,7 +439,9 @@ gulp.task "rev", ()->
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
       cascade: false
       remove: false
-    .pipe gulp_clean_css level: 2
+    .pipe gulp_clean_css
+      level: 2
+      rebaseTo: "public"
   other = gulp.src ["public/**","!public/**/*.{js,css}"]
   merge_stream js, css, other
     .pipe gulp_rev_all.revision
