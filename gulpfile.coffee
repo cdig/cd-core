@@ -494,7 +494,7 @@ gulp.task "cd-module:svga:wrap", (cb)->
     cb()
 
 gulp.task "cd-module:svga",
-  gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
+  gulp.series "cd-module:svga:basic-assets", "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
 
 
 gulp.task "cd-module:watch", (cb)->
