@@ -41,7 +41,7 @@ watching = false
 
 
 # Assets that should just be copied straight from source to public with no processing
-basicAssetTypes = "gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf"
+basicAssetTypes = "gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,woff2"
 
 dev_paths =
   gulp: "dev/*/gulpfile.coffee"
