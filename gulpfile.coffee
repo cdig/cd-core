@@ -449,13 +449,14 @@ gulp.task "rev", ()->
     .pipe gulp.dest "deploy/all"
 
 
-gulp.task "serve", ()->
+gulp.task "serve", (cb)->
   browser_sync.init
     ghostMode: false
     notify: false
     server: baseDir: "public"
     ui: false
     watchOptions: ignoreInitial: true
+  cb()
 
 
 # TASKS: MODULE MAIN ##############################################################################
