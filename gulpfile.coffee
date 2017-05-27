@@ -187,7 +187,7 @@ fileContents = (filePath, file)->
 logAndKillError = (type, full = true)-> (err)->
   beepbeep()
   console.log chalk.red("\n ERROR IN YOUR #{type} 😱")
-  console.log (if full then err.toString() else err.message) + "\n"
+  console.log if full then err.toString() else err.message
   gulp_notify.onError(
     emitError: true
     icon: false
