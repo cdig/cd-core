@@ -193,7 +193,7 @@ logAndKillError = (type, full = true)-> (err)->
     emitError: true
     icon: false
     message: err.message
-    title: "👻"
+    title: "👻 #{type}"
     wait: true
     )(err)
   @emit "end"
