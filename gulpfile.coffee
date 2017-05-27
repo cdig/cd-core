@@ -184,10 +184,10 @@ gulp_notify.on "click", ()->
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
 
-logAndKillError = (type)-> (err)->
+logAndKillError = (type, full = true)-> (err)->
   beepbeep()
   console.log chalk.red("\n ERROR IN YOUR #{type} 😱")
-  console.log (err.message or err.toString()) + "\n"
+  console.log (if full then err.toString() else err.message) + "\n"
   gulp_notify.onError(
     emitError: true
     icon: false
@@ -295,7 +295,7 @@ gulp.task "cd-module:scss", ()->
     .pipe gulp_concat "styles.scss"
     .pipe gulp_sass
       precision: 2
-    .on "error", logAndKillError "SCSS"
+    .on "error", logAndKillError "SCSS", false
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.css"
