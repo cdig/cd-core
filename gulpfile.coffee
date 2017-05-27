@@ -185,9 +185,10 @@ fileContents = (filePath, file)->
   file.contents.toString "utf8"
 
 logAndKillError = (type, full = true)-> (err)->
+  pwd = process.cwd() + "/"
   beepbeep()
   console.log chalk.red("\n ERROR IN YOUR #{type} 😱")
-  console.log if full then err.toString() else err.message
+  console.log (if full then err.toString() else err.message).replace pwd, ""
   gulp_notify.onError(
     emitError: true
     icon: false
