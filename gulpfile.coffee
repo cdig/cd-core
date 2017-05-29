@@ -2,6 +2,7 @@ beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
 del = require "del"
+fs = require "fs"
 glob = require "glob"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
@@ -462,6 +463,9 @@ gulp.task "serve", (cb)->
 
 # TASKS: MODULE MAIN ##############################################################################
 
+gulp.task "cd-module:svga-check", (cb)->
+  if fs.existsSync("source/svga")
+    throw "\n\n\n  You have a folder named 'svga' inside your source folder. It should be beside your source folder.\n\n"
 
 gulp.task "cd-module:svga:beautify", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
@@ -498,7 +502,7 @@ gulp.task "cd-module:watch", (cb)->
 
 
 gulp.task "cd-module:recompile",
-  gulp.series "del:public", "dev", "cd-module:kit:fix", "cd-module:basicAssets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga", "cd-module:kit:compile"
+  gulp.series "cd-module:svga-check", "del:public", "dev", "cd-module:kit:fix", "cd-module:basicAssets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga", "cd-module:kit:compile"
 
 
 gulp.task "cd-module:prod",
