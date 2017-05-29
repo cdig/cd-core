@@ -466,7 +466,8 @@ gulp.task "serve", (cb)->
 gulp.task "cd-module:svga-check", (cb)->
   if fs.existsSync("source/svga")
     throw "\n\n\n  You have a folder named 'svga' inside your source folder. It should be beside your source folder.\n\n"
-
+  cb()
+  
 gulp.task "cd-module:svga:beautify", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
     merge_stream svgas.map (folder)-> svga_beautify_svg(folder, path.basename(folder), "public/svga/")()
