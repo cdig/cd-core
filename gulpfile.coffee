@@ -76,6 +76,7 @@ module_paths =
   svg: [
     "node_modules/cd-module/pack/**/*.svg"
     "source/**/*.svg"
+    "!source/icon.svg"
   ]
   svga:
     projects: "svga/*"
@@ -93,7 +94,10 @@ svga_paths =
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
   ]
-  svg: "source/**/*.svg"
+  svg: [
+    "source/**/*.svg"
+    "!source/icon.svg"
+  ]
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
