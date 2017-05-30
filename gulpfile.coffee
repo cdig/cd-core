@@ -76,7 +76,6 @@ module_paths =
   svg: [
     "node_modules/cd-module/pack/**/*.svg"
     "source/**/*.svg"
-    "!source/icon.svg"
   ]
   svga:
     projects: "svga/*"
@@ -94,10 +93,7 @@ svga_paths =
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
   ]
-  svg: [
-    "source/**/*.svg"
-    "!source/icon.svg"
-  ]
+  svg: "source/**/*.svg"
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
@@ -310,7 +306,7 @@ gulp.task "cd-module:scss", ()->
 
 # Clean and minify static SVG files in source and asset packs
 gulp.task "cd-module:svg", ()->
-  gulp.src module_paths.svg
+  gulp.src module_paths.svg, ignore: "source/icon.svg"
     .on "error", logAndKillError "SVG"
     .pipe gulp_replace "Lato_Regular_Regular", "Lato, sans-serif"
     .pipe gulp_replace "Lato_Bold_Bold", "Lato, sans-serif"
@@ -332,7 +328,7 @@ gulp.task "cd-module:svg", ()->
 
 # This task MUST be idempotent, since it overwrites the original file
 svga_beautify_svg = (cwd, svgName, dest)-> ()->
-  fixFlashWeirdness gulp.src cwd + "/" + svga_paths.svg
+  fixFlashWeirdness gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .pipe changed cwd + "/source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .on "error", logAndKillError "SVG"
@@ -364,7 +360,7 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
   libs = gulp.src svga_paths.libs
     .pipe gulp.dest "#{dest}/_libs"
-  svgSource = gulp.src cwd + "/" + svga_paths.svg
+  svgSource = gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
   gulp.src svga_paths.wrapper
