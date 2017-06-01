@@ -537,5 +537,5 @@ gulp.task "svga:prod",
 
 
 gulp.task "svga:dev",
-  gulp.series "svga:recompile", "svga:watch", "serve"
-  # gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
+  # gulp.series "svga:recompile", "svga:watch", "serve"
+  gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
