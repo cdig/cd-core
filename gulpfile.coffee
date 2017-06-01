@@ -11,7 +11,6 @@ gulp_changed = require "gulp-changed"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
 gulp_htmlmin = require "gulp-htmlmin"
-gulp_if = require "gulp-if"
 gulp_inject = require "gulp-inject"
 gulp_kit = require "gulp-kit"
 gulp_natural_sort = require "gulp-natural-sort"
@@ -24,6 +23,7 @@ gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_uglify = require "gulp-uglify"
+gulp_util = require "gulp-util"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 merge_stream = require "merge-stream"
 path = require "path"
@@ -198,24 +198,27 @@ logAndKillError = (type, full = true)-> (err)->
     )(err)
   @emit "end"
 
+cond = (predicate, cb)->
+  if predicate then cb else gulp_util.noop()
+
 changed = (path = "public")->
-  gulp_if watching, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
+  cond watching, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
 
 stream = (glob)->
-  gulp_if watching, browser_sync.stream match: glob
+  cond watching, browser_sync.stream match: glob
 
 stripPack = (path)->
   path.dirname = path.dirname.replace /.*\/pack\//, ''
   path
 
 initMaps = ()->
-  gulp_if !prod, gulp_sourcemaps.init()
+  cond !prod, gulp_sourcemaps.init()
 
 emitMaps = ()->
-  gulp_if !prod, gulp_sourcemaps.write "."
+  cond !prod, gulp_sourcemaps.write "."
 
 notify = (msg)->
-  gulp_if watching, gulp_notify
+  cond watching, gulp_notify
     title: "👍"
     message: msg
 
@@ -367,7 +370,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src=\"_libs", "<script defer src=\"_libs"
     .pipe gulp_replace "<script defer src=\"source.js", "<script defer src=\"#{svgName}.js"
-    .pipe gulp_if prod, gulp_htmlmin
+    .pipe cond prod, gulp_htmlmin
       collapseWhitespace: true
       collapseBooleanAttributes: true
       collapseInlineTagWhitespace: true

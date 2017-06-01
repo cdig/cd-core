@@ -18,7 +18,6 @@
     "gulp-coffee": "",
     "gulp-concat": "",
     "gulp-htmlmin": "",
-    "gulp-if": "",
     "gulp-inject": "",
     "gulp-kit": "",
     "gulp-natural-sort": "",
@@ -31,6 +30,7 @@
     "gulp-sourcemaps": "",
     "gulp-svgmin": "",
     "gulp-uglify": "",
+    "gulp-util": "",
     "merge-stream": ""
   }
 }
