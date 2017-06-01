@@ -110,7 +110,7 @@ svg_plugins = [
   {removeEditorsNSData: true}
   {removeEmptyAttrs: true}
   {removeHiddenElems: true}
-  {removeEmptyText: true}
+  # {removeEmptyText: true}
   {removeEmptyContainers: true}
   # {removeViewBox: true} # disabled by default
   {cleanUpEnableBackground: true}
@@ -334,7 +334,9 @@ gulp.task "cd-module:svg", ()->
     .pipe gulp_replace "kerning=\"0\"", ""
     .pipe gulp_replace "xml:space=\"preserve\"", ""
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the perf cost
-    .pipe gulp_svgmin (file)-> {full: true, plugins: cd_module_svg_plugins}
+    # svgmin stabilizes after 2 runs
+    .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
+    .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     .pipe gulp.dest "public"
 
 
@@ -347,12 +349,9 @@ svga_beautify_svg = (cwd, svgName, dest)-> ()->
     .pipe changed cwd + "/source"
     .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
     .on "error", logAndKillError "SVG"
-    .pipe gulp_svgmin
-      full: true
-      js2svg:
-        pretty: true
-        indent: "  "
-      plugins: svg_plugins
+    # svgmin stabilizes after 2 runs
+    .pipe gulp_svgmin full: true, js2svg: { pretty: true, indent: "  " }, plugins: svg_plugins
+    .pipe gulp_svgmin full: true, js2svg: { pretty: true, indent: "  " }, plugins: svg_plugins
     .pipe gulp.dest cwd + "/source"
 
 
