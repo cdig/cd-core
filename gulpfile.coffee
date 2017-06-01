@@ -77,7 +77,10 @@ module_paths =
   ]
   svga:
     projects: "svga/*"
-    watch: "svga/**"
+    watch: [
+      "svga/**"
+      "node_modules/svga/dist/**/*"
+    ]
 
 svga_paths =
   coffee: "source/**/*.coffee"
@@ -419,6 +422,7 @@ gulp.task "dev", gulp_shell.task [
 
 gulp.task "dev:watch", (cb)->
   gulp.src dev_paths.gulp
+    .on "error", logAndKillError "DEV"
     .on "data", (chunk)->
       folder = chunk.path.replace "/gulpfile.coffee", ""
       process.chdir folder
@@ -426,7 +430,6 @@ gulp.task "dev:watch", (cb)->
       child.stdout.on "data", (data)->
         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
-    .on "error", logAndKillError "SVG"
   cb()
 
 
