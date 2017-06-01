@@ -1,7 +1,6 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
-del = require "del"
 fs = require "fs"
 glob = require "glob"
 gulp = require "gulp"
@@ -203,6 +202,17 @@ cond = (predicate, cb)->
 
 changed = (path = "public")->
   cond watching, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
+
+del = (path)->
+  if fs.existsSync path
+    for file in fs.readdirSync path
+      curPath = path + "/" + file
+      if fs.lstatSync(curPath).isDirectory()
+        del curPath
+      else
+        fs.unlinkSync curPath
+      null
+    fs.rmdirSync path
 
 stream = (glob)->
   cond watching, browser_sync.stream match: glob
