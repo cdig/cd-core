@@ -402,12 +402,14 @@ gulp.task "svga:wrap-svg", svga_wrap_svg ".", "index", "public"
 # TASKS: SYSTEM ###################################################################################
 
 
-gulp.task "del:public", ()->
+gulp.task "del:public", (cb)->
   del "public"
+  cb()
 
 
-gulp.task "del:deploy", ()->
+gulp.task "del:deploy", (cb)->
   del "deploy"
+  cb()
 
 
 gulp.task "dev", gulp_shell.task [
