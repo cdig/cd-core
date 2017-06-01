@@ -25,7 +25,6 @@ gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_uglify = require "gulp-uglify"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
-lazypipe = require "lazypipe"
 merge_stream = require "merge-stream"
 path = require "path"
 spawn = require("child_process").spawn

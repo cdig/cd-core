@@ -31,7 +31,6 @@
     "gulp-sourcemaps": "",
     "gulp-svgmin": "",
     "gulp-uglify": "",
-    "lazypipe": "",
     "merge-stream": ""
   }
 }
