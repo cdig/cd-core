@@ -525,8 +525,7 @@ gulp.task "cd-module:prod",
 
 
 gulp.task "cd-module:dev",
-  gulp.series "cd-module:recompile", "cd-module:watch", "serve"
-  # gulp.series "dev:watch", "cd-module:recompile", "cd-module:watch", "serve"
+  gulp.series "dev:watch", "cd-module:recompile", "cd-module:watch", "serve"
 
 
 # TASKS: SVGA MAIN ################################################################################
@@ -551,5 +550,4 @@ gulp.task "svga:prod",
 
 
 gulp.task "svga:dev",
-  # gulp.series "svga:recompile", "svga:watch", "serve"
   gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
