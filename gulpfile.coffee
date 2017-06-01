@@ -426,6 +426,7 @@ gulp.task "dev:watch", (cb)->
       child.stdout.on "data", (data)->
         console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
       process.chdir "../.."
+    .on "error", logAndKillError "SVG"
   cb()
 
 
