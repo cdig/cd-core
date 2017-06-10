@@ -420,9 +420,9 @@ gulp.task "del:deploy", (cb)->
   cb()
 
 
-gulp.task "dev", (cb)->
-  gulp_shell.task 'if [ -d "dev" ]; then rsync --exclude "*/.git/" --delete -ar dev/* node_modules; fi'
-  setTimeout cb, 500
+gulp.task "dev", gulp_shell.task [
+  'if [ -d "dev" ]; then rsync --exclude "*/.git/" --delete -ar dev/* node_modules; fi'
+]
 
 
 gulp.task "dev:watch", (cb)->
@@ -556,7 +556,7 @@ gulp.task "cd-module:dev",
 
 gulp.task "svga:watch", (cb)->
   watching = true
-  gulp.watch dev_paths.watch, gulp.series "svga:recompile"
+  gulp.watch dev_paths.watch, gulp.series "dev"
   gulp.watch svga_paths.coffee, gulp.series "svga:coffee:source"
   gulp.watch svga_paths.libs, gulp.series "svga:wrap-svg", "reload"
   gulp.watch svga_paths.wrapper, gulp.series "svga:wrap-svg", "reload"
