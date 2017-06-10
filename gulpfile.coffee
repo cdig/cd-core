@@ -442,10 +442,14 @@ gulp.task "reload", (cb)->
   cb()
 
 
-gulp.task "rev", ()->
-  js = gulp.src "public/**/*.js"
+gulp.task "rev:optim:js", ()->
+  gulp.src "public/**/*.js"
     .pipe gulp_uglify()
-  css = gulp.src "public/**/*.css", ignore: "public/fonts/**/*.css"
+    .pipe gulp.dest "public"
+
+
+gulp.task "rev:optim:css", ()->
+  gulp.src "public/**/*.css", ignore: "public/fonts/**/*.css"
     .pipe gulp_autoprefixer
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
       cascade: false
@@ -453,8 +457,11 @@ gulp.task "rev", ()->
     .pipe gulp_clean_css
       level: 2
       rebaseTo: "public"
-  other = gulp.src "public/**", ignore: "public/**/*.{js,css}"
-  merge_stream js, css, other
+    .pipe gulp.dest "public"
+
+
+gulp.task "rev:finish", ()->
+  gulp.src "public/**", ignore: "public/fonts/**/*.css"
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
         rev.replace /.*\//, ""
@@ -466,6 +473,10 @@ gulp.task "rev", ()->
       path.dirname = ""
       path
     .pipe gulp.dest "deploy/all"
+
+
+gulp.task "rev",
+  gulp.series "rev:optim:js", "rev:optim:css", "rev:finish"
 
 
 gulp.task "serve", (cb)->
