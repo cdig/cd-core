@@ -556,7 +556,7 @@ gulp.task "cd-module:dev",
 
 gulp.task "svga:watch", (cb)->
   watching = true
-  gulp.watch dev_paths.watch, gulp.series "dev"
+  gulp.watch dev_paths.watch, gulp.series "svga:recompile"
   gulp.watch svga_paths.coffee, gulp.series "svga:coffee:source"
   gulp.watch svga_paths.libs, gulp.series "svga:wrap-svg", "reload"
   gulp.watch svga_paths.wrapper, gulp.series "svga:wrap-svg", "reload"
