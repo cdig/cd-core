@@ -421,7 +421,7 @@ gulp.task "del:deploy", (cb)->
 
 
 gulp.task "dev", (cb)->
-  gulp.src dev_paths.watch
+  gulp.src dev_paths.watch, base: "dev"
     .pipe gulp.dest "node_modules"
 
 
