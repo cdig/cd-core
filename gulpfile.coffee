@@ -26,14 +26,15 @@ gulp_util = require "gulp-util"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 merge_stream = require "merge-stream"
 path = require "path"
-spawn = require("child_process").spawn
 
 
 # STATE ###########################################################################################
 
 
 prod = false
-watching = false
+watchingDeploy = false
+watchingPublic = false
+indexName = null
 
 
 # CONFIG ##########################################################################################
@@ -204,21 +205,24 @@ cond = (predicate, cb)->
   if predicate then cb else gulp_util.noop()
 
 changed = (path = "public")->
-  cond watching, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
+  cond watchingPublic, gulp_changed path, hasChanged: gulp_changed.compareSha1Digest
 
-del = (path)->
+delSync = (path)->
   if fs.existsSync path
     for file in fs.readdirSync path
       curPath = path + "/" + file
       if fs.lstatSync(curPath).isDirectory()
-        del curPath
+        delSync curPath
       else
         fs.unlinkSync curPath
       null
     fs.rmdirSync path
 
+openDeploy = ()->
+  child_process.exec "open deploy/all/#{indexName}"
+
 stream = (glob)->
-  cond watching, browser_sync.stream match: glob
+  cond watchingPublic, browser_sync.stream match: glob
 
 stripPack = (path)->
   path.dirname = path.dirname.replace /.*\/pack\//, ''
@@ -231,7 +235,7 @@ emitMaps = ()->
   cond !prod, gulp_sourcemaps.write "."
 
 notify = (msg)->
-  cond watching, gulp_notify
+  cond watchingPublic, gulp_notify
     title: "👍"
     message: msg
 
@@ -255,7 +259,7 @@ fixFlashWeirdness = (src)->
 
 
 # Copy all basic assets in source and asset packs to public
-gulp.task "cd-module:basicAssets", ()->
+gulp.task "cd-module:basic-assets", ()->
   gulp.src module_paths.basicAssets
     .on "error", logAndKillError "BASIC ASSETS"
     .pipe gulp_rename stripPack
@@ -402,104 +406,6 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe notify "SVG"
 
 
-gulp.task "svga:beautify-svg", svga_beautify_svg ".", "index", "public"
-gulp.task "svga:coffee:source", svga_coffee_source ".", "index", "public"
-gulp.task "svga:wrap-svg", svga_wrap_svg ".", "index", "public"
-
-
-# TASKS: SYSTEM ###################################################################################
-
-
-gulp.task "del:public", (cb)->
-  del "public"
-  cb()
-
-
-gulp.task "del:deploy", (cb)->
-  del "deploy"
-  cb()
-
-
-gulp.task "dev", (cb)->
-  gulp.src dev_paths.watch, base: "dev"
-    .pipe gulp.dest "node_modules"
-
-
-gulp.task "dev:watch", (cb)->
-  gulp.src dev_paths.gulp
-    .on "error", logAndKillError "DEV"
-    .on "data", (chunk)->
-      folder = chunk.path.replace "/gulpfile.coffee", ""
-      process.chdir folder
-      child = spawn "gulp", ["default"]
-      child.stdout.on "data", (data)->
-        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
-      process.chdir "../.."
-  cb()
-
-
-gulp.task "prod:setup", (cb)->
-  prod = true
-  cb()
-
-
-gulp.task "reload", (cb)->
-  browser_sync.reload()
-  cb()
-
-
-gulp.task "rev:optim:js", ()->
-  gulp.src "public/**/*.js"
-    .on "error", logAndKillError "REV OPTIM JS"
-    .pipe gulp_uglify()
-    .pipe gulp.dest "public"
-
-
-gulp.task "rev:optim:css", ()->
-  gulp.src "public/**/*.css", ignore: "public/fonts/**/*.css"
-    .on "error", logAndKillError "REV OPTIM CSS"
-    .pipe gulp_autoprefixer
-      browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
-      cascade: false
-      remove: false
-    .pipe gulp_clean_css
-      level: 2
-      rebaseTo: "public"
-    .pipe gulp.dest "public"
-
-
-gulp.task "rev:finish", ()->
-  gulp.src "public/**", ignore: "public/fonts/**/*.css"
-    .on "error", logAndKillError "REV FINISH"
-    .pipe gulp_rev_all.revision
-      transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
-        rev.replace /.*\//, ""
-      transformFilename: (file, hash)-> # Applies to the files themselves
-        name = file.revHash + file.extname
-        child_process.execSync "mkdir -p deploy/index && touch deploy/index/#{name}" if file.revPathOriginal.indexOf("/public/index.html") > 0
-        name
-    .pipe gulp_rename (path)->
-      path.dirname = ""
-      path
-    .pipe gulp.dest "deploy/all"
-
-
-gulp.task "rev",
-  gulp.series "rev:optim:js", "rev:optim:css", "rev:finish"
-
-
-gulp.task "serve", (cb)->
-  browser_sync.init
-    ghostMode: false
-    notify: false
-    server: baseDir: "public"
-    ui: false
-    watchOptions: ignoreInitial: true
-  cb()
-
-
-# TASKS: MODULE MAIN ##############################################################################
-
 gulp.task "cd-module:svga-check", (cb)->
   if fs.existsSync("source/svga")
     throw "\n\n\n  You have a folder named 'svga' inside your source folder. It should be beside your source folder.\n\n"
@@ -523,54 +429,182 @@ gulp.task "cd-module:svga:wrap", (cb)->
   else
     cb()
 
-gulp.task "cd-module:svga",
+
+gulp.task "cd-module:svga:build",
   gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
 
 
-gulp.task "cd-module:watch", (cb)->
-  watching = true
-  gulp.watch module_paths.basicAssets, gulp.series "cd-module:basicAssets"
-  gulp.watch module_paths.coffee, gulp.series "cd-module:coffee"
-  gulp.watch dev_paths.watch, gulp.series "dev"
-  gulp.watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
-  gulp.watch module_paths.scss, gulp.series "cd-module:scss"
-  gulp.watch module_paths.svg, gulp.series "cd-module:svg", "reload"
-  gulp.watch module_paths.svga.watch, gulp.series "cd-module:svga", "reload"
+gulp.task "svga:beautify", svga_beautify_svg ".", "index", "public"
+gulp.task "svga:coffee", svga_coffee_source ".", "index", "public"
+gulp.task "svga:wrap", svga_wrap_svg ".", "index", "public"
+
+gulp.task "svga:build",
+  gulp.series "svga:beautify", "svga:coffee", "svga:wrap"
+
+
+# TASKS: DEPLOY ###################################################################################
+
+
+gulp.task "deploy:del", (cb)->
+  delSync "deploy"
   cb()
 
 
-gulp.task "cd-module:recompile",
-  gulp.series "cd-module:svga-check", "del:public", "dev", "cd-module:kit:fix", "cd-module:basicAssets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga", "cd-module:kit:compile"
+gulp.task "deploy:optim:js", ()->
+  gulp.src "public/**/*.js"
+    .on "error", logAndKillError "REV OPTIM JS"
+    .pipe gulp_uglify()
+    .pipe gulp.dest "public"
 
 
-gulp.task "cd-module:prod",
-  gulp.series "prod:setup", "cd-module:recompile", "del:deploy", "rev"
+gulp.task "deploy:optim:css", ()->
+  gulp.src "public/**/*.css", ignore: "public/fonts/**/*.css"
+    .on "error", logAndKillError "REV OPTIM CSS"
+    .pipe gulp_autoprefixer
+      browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
+      cascade: false
+      remove: false
+    .pipe gulp_clean_css
+      level: 2
+      rebaseTo: "public"
+    .pipe gulp.dest "public"
 
 
-gulp.task "cd-module:dev",
-  gulp.series "dev:watch", "cd-module:recompile", "cd-module:watch", "serve"
+gulp.task "deploy:finish", ()->
+  gulp.src "public/**", ignore: "public/fonts/**/*.css"
+    .on "error", logAndKillError "REV FINISH"
+    .pipe gulp_rev_all.revision
+      transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
+        rev.replace /.*\//, ""
+      transformFilename: (file, hash)-> # Applies to the files themselves
+        name = file.revHash + file.extname
+        if file.revPathOriginal.indexOf("/public/index.html") > 0
+          child_process.execSync "mkdir -p deploy/index && touch deploy/index/#{name}"
+          indexName = name
+        name
+    .pipe gulp_rename (path)->
+      path.dirname = ""
+      path
+    .pipe gulp.dest "deploy/all"
+
+
+gulp.task "deploy:open", (cb)->
+  openDeploy()
+  cb()
+
+
+gulp.task "deploy:create",
+  gulp.series "deploy:del", "deploy:optim:js", "deploy:optim:css", "deploy:finish"
+
+
+gulp.task "deploy-and-open",
+  gulp.series "deploy:create", "deploy:open"
+
+
+# TASKS: GENERAL ##################################################################################
+
+
+gulp.task "del-public", (cb)->
+  delSync "public"
+  cb()
+
+
+gulp.task "copy-dev", (cb)->
+  gulp.src dev_paths.watch, base: "dev"
+    .pipe gulp.dest "node_modules"
+
+
+gulp.task "dev:gulp", (cb)->
+  gulp.src dev_paths.gulp
+    .on "error", logAndKillError "DEV"
+    .on "data", (chunk)->
+      folder = chunk.path.replace "/gulpfile.coffee", ""
+      process.chdir folder
+      child = child_process.spawn "gulp", ["default"]
+      child.stdout.on "data", (data)->
+        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
+      process.chdir "../.."
+  cb()
+
+
+gulp.task "reload", (cb)->
+  if watchingDeploy
+    do gulp.series "deploy-and-open"
+  if watchingPublic
+    browser_sync.reload()
+  cb()
+
+
+gulp.task "serve", (cb)->
+  browser_sync.init
+    ghostMode: false
+    notify: false
+    server: baseDir: "public"
+    ui: false
+    watchOptions: ignoreInitial: true
+  cb()
+
+
+# TASKS: MODULE MAIN ##############################################################################
+
+
+gulp.task "cd-module:watch", (cb)->
+  gulp.watch module_paths.basicAssets, gulp.series "cd-module:basic-assets"
+  gulp.watch module_paths.coffee, gulp.series "cd-module:coffee"
+  gulp.watch dev_paths.watch, gulp.series "copy-dev"
+  gulp.watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
+  gulp.watch module_paths.scss, gulp.series "cd-module:scss"
+  gulp.watch module_paths.svg, gulp.series "cd-module:svg", "reload"
+  gulp.watch module_paths.svga.watch, gulp.series "cd-module:svga:build", "reload"
+  cb()
+
+
+gulp.task "cd-module:compile",
+  gulp.series "cd-module:svga-check", "del-public", "copy-dev", "cd-module:kit:fix", "cd-module:basic-assets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga:build", "cd-module:kit:compile"
+
+
+gulp.task "cd-module:dev", (cb)->
+  watchingPublic = true
+  do gulp.series "dev:gulp", "cd-module:compile", "cd-module:watch", "serve"
+  cb()
+
+
+gulp.task "cd-module:prod", (cb)->
+  prod = true
+  do gulp.series "cd-module:compile", "deploy:create"
+  cb()
 
 
 # TASKS: SVGA MAIN ################################################################################
 
 
 gulp.task "svga:watch", (cb)->
-  watching = true
-  gulp.watch dev_paths.watch, gulp.series "dev"
-  gulp.watch svga_paths.coffee, gulp.series "svga:coffee:source"
-  gulp.watch svga_paths.libs, gulp.series "svga:wrap-svg", "reload"
-  gulp.watch svga_paths.wrapper, gulp.series "svga:wrap-svg", "reload"
-  gulp.watch svga_paths.svg, gulp.series "svga:beautify-svg", "svga:wrap-svg", "reload"
+  gulp.watch dev_paths.watch, gulp.series "copy-dev"
+  gulp.watch svga_paths.coffee, gulp.series "svga:coffee", "reload"
+  gulp.watch svga_paths.libs, gulp.series "svga:wrap", "reload"
+  gulp.watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
+  gulp.watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
   cb()
 
 
-gulp.task "svga:recompile",
-  gulp.series "del:public", "dev", "svga:beautify-svg", "svga:coffee:source", "svga:wrap-svg"
+gulp.task "svga:compile",
+  gulp.series "del-public", "copy-dev", "svga:build"
 
 
-gulp.task "svga:prod",
-  gulp.series "prod:setup", "svga:recompile", "del:deploy", "rev"
+gulp.task "svga:debug", (cb)->
+  prod = true
+  watchingDeploy = true
+  do gulp.series "dev:gulp", "svga:compile", "svga:watch", "deploy-and-open"
+  cb()
 
 
-gulp.task "svga:dev",
-  gulp.series "dev:watch", "svga:recompile", "svga:watch", "serve"
+gulp.task "svga:dev", (cb)->
+  watchingPublic = true
+  do gulp.series "dev:gulp", "svga:compile", "svga:watch", "serve"
+  cb()
+
+
+gulp.task "svga:prod", (cb)->
+  prod = true
+  do gulp.series "svga:compile", "deploy:create"
+  cb()
