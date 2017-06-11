@@ -1,6 +1,7 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
+child_process = require "child_process"
 fs = require "fs"
 glob = require "glob"
 gulp = require "gulp"
@@ -18,7 +19,6 @@ gulp_rename = require "gulp-rename"
 gulp_replace = require "gulp-replace"
 gulp_rev_all = require "gulp-rev-all"
 gulp_sass = require "gulp-sass"
-gulp_shell = require "gulp-shell"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_uglify = require "gulp-uglify"
@@ -177,7 +177,7 @@ cd_module_svg_plugins = svg_plugins.concat [
 
 gulp_notify.logLevel(0)
 gulp_notify.on "click", ()->
-  do gulp_shell.task "open -a Terminal"
+  child_process.exec "open -a Terminal"
 
 
 # HELPER FUNCTIONS ################################################################################
@@ -476,7 +476,7 @@ gulp.task "rev:finish", ()->
         rev.replace /.*\//, ""
       transformFilename: (file, hash)-> # Applies to the files themselves
         name = file.revHash + file.extname
-        gulp_shell.task("mkdir -p deploy/index && touch deploy/index/#{name}")() if file.revPathOriginal.indexOf("/public/index.html") > 0
+        child_process.execSync "mkdir -p deploy/index && touch deploy/index/#{name}" if file.revPathOriginal.indexOf("/public/index.html") > 0
         name
     .pipe gulp_rename (path)->
       path.dirname = ""
