@@ -45,7 +45,7 @@ basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,w
 
 dev_paths =
   gulp: ["dev/*/gulpfile.coffee", "!dev/cd-core/**"]
-  watch: ["dev/*/{dist,pack}/**", "dev/cd-core/gulpfile.coffee"]
+  watch: ["dev/*/{dist,pack}/**", "dev/cd-core/*.coffee"] # We can't say cd-core/gulpfile.coffee or it fails when we aren't doing cd-core dev
 
 module_paths =
   basicAssets: [
