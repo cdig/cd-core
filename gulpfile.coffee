@@ -44,7 +44,7 @@ basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,w
 
 dev_paths =
   gulp: "dev/*/gulpfile.coffee"
-  watch: "dev/**/{dist,pack}/**/*"
+  watch: "dev/*/{dist,pack}/**"
 
 module_paths =
   basicAssets: [
@@ -79,7 +79,7 @@ module_paths =
     projects: "svga/*"
     watch: [
       "svga/**"
-      "node_modules/svga/dist/**/*"
+      "node_modules/svga/dist/**"
     ]
 
 svga_paths =
@@ -420,9 +420,9 @@ gulp.task "del:deploy", (cb)->
   cb()
 
 
-gulp.task "dev", gulp_shell.task [
-  'if [ -d "dev" ]; then rsync --exclude "*/.git/" --delete -ar dev/* node_modules; fi'
-]
+gulp.task "dev", (cb)->
+  gulp.src dev_paths.watch
+    .pipe gulp.dest "node_modules"
 
 
 gulp.task "dev:watch", (cb)->
