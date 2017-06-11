@@ -43,8 +43,8 @@ watching = false
 basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,woff2"
 
 dev_paths =
-  gulp: "dev/*/gulpfile.coffee"
-  watch: "dev/*/{dist,pack}/**"
+  gulp: ["dev/*/gulpfile.coffee", "!dev/cd-core/**"]
+  watch: ["dev/*/{dist,pack}/**", "dev/cd-core/gulpfile.coffee"]
 
 module_paths =
   basicAssets: [
