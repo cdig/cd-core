@@ -25,7 +25,6 @@
     "gulp-replace": "",
     "gulp-rev-all": "",
     "gulp-sass": "",
-    "gulp-shell": "",
     "gulp-sourcemaps": "",
     "gulp-svgmin": "",
     "gulp-uglify": "",
