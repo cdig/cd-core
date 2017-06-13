@@ -472,7 +472,7 @@ gulp.task "deploy:optim:css", ()->
       remove: false
     .pipe gulp_clean_css
       level: 2
-      rebaseTo: "deploy/temp"
+      rebaseTo: "public"
     .pipe gulp.dest "deploy/temp"
 
 
