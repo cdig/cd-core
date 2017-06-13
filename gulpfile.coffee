@@ -458,7 +458,7 @@ gulp.task "deploy:optim:js", ()->
 
 
 gulp.task "deploy:optim:css", ()->
-  gulp.src "public/**/*.css", ignore: "public/fonts/**/*.css"
+  gulp.src "public/**/*.css"
     .on "error", logAndKillError "REV OPTIM CSS"
     .pipe gulp_autoprefixer
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
@@ -471,7 +471,7 @@ gulp.task "deploy:optim:css", ()->
 
 
 gulp.task "deploy:finish", ()->
-  gulp.src "public/**", ignore: "public/fonts/**/*.css"
+  gulp.src "public/**"
     .on "error", logAndKillError "REV FINISH"
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
