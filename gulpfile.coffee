@@ -87,7 +87,6 @@ svga_paths =
   coffee: "source/**/*.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
-    "node_modules/pressure/dist/pressure.js"
     "node_modules/svga/dist/lato-bold.woff"
     "node_modules/svga/dist/lato-bold.woff2"
     "node_modules/svga/dist/lato-regular.woff"
