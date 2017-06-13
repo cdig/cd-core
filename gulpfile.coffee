@@ -450,11 +450,17 @@ gulp.task "deploy:del", (cb)->
   cb()
 
 
+gulp.task "deploy:copy", ()->
+  gulp.src ["public/**", "!**.{js,css}"]
+    .on "error", logAndKillError "REV COPY"
+    .pipe gulp.dest "deploy/temp"
+
+
 gulp.task "deploy:optim:js", ()->
   gulp.src "public/**/*.js"
     .on "error", logAndKillError "REV OPTIM JS"
     .pipe gulp_uglify()
-    .pipe gulp.dest "public"
+    .pipe gulp.dest "deploy/temp"
 
 
 gulp.task "deploy:optim:css", ()->
@@ -466,19 +472,19 @@ gulp.task "deploy:optim:css", ()->
       remove: false
     .pipe gulp_clean_css
       level: 2
-      rebaseTo: "public"
-    .pipe gulp.dest "public"
+      rebaseTo: "deploy/temp"
+    .pipe gulp.dest "deploy/temp"
 
 
 gulp.task "deploy:finish", ()->
-  gulp.src "public/**"
+  gulp.src "deploy/temp/**"
     .on "error", logAndKillError "REV FINISH"
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
         rev.replace /.*\//, ""
       transformFilename: (file, hash)-> # Applies to the files themselves
         name = file.revHash + file.extname
-        if file.revPathOriginal.indexOf("/public/index.html") > 0
+        if file.revPathOriginal.indexOf("/deploy/temp/index.html") > 0
           child_process.execSync "mkdir -p deploy/index && touch deploy/index/#{name}"
           indexName = name
         name
@@ -494,7 +500,7 @@ gulp.task "deploy:open", (cb)->
 
 
 gulp.task "deploy:create",
-  gulp.series "deploy:del", "deploy:optim:js", "deploy:optim:css", "deploy:finish"
+  gulp.series "deploy:del", "deploy:copy", "deploy:optim:js", "deploy:optim:css", "deploy:finish"
 
 
 gulp.task "deploy-and-open",
