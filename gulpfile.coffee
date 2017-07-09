@@ -469,10 +469,10 @@ gulp.task "deploy:optim:css", ()->
       browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
       cascade: false
       remove: false
-    # Disabled until clean-css fixes: https://github.com/jakubpawlowicz/clean-css/issues/954
-    # .pipe gulp_clean_css
-    #   level: 2
-    #   rebaseTo: "public"
+    .pipe gulp_clean_css
+      compatibility: "*,-properties.zeroUnits"
+      level: 2
+      rebaseTo: "public"
     .pipe gulp.dest "deploy/temp"
 
 
