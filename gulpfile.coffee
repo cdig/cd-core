@@ -481,7 +481,7 @@ gulp.task "deploy:finish", ()->
     .on "error", logAndKillError "REV FINISH"
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
-        rev.replace /.*\//, "https://cdn.lunchboxsessions.com/v4"
+        rev.replace /.*\//, "https://cdn.lunchboxsessions.com/v4/"
       transformFilename: (file, hash)-> # Applies to the files themselves
         name = file.revHash + file.extname
         if file.revPathOriginal.indexOf("/deploy/temp/index.html") > 0
