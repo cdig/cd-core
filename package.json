@@ -1,6 +1,6 @@
 {
   "name": "cd-core",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Stuff shared by SVGA and cd-module",
   "license": "UNLICENSED",
   "private": true,
