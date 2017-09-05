@@ -471,6 +471,7 @@ gulp.task "deploy:optim:css", ()->
       remove: false
     .pipe gulp_clean_css
       compatibility: "*,-properties.zeroUnits"
+      inline: false # Experimental fix to font loading issues
       level: 2
       rebaseTo: "public"
     .pipe gulp.dest "deploy/temp"
