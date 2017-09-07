@@ -388,6 +388,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .on "error", logAndKillError "SVG SOURCE"
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
+    .pipe gulp_replace "<svg ", "<svg id=\"svga\" "
   gulp.src svga_paths.wrapper
     .on "error", logAndKillError "SVG"
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
