@@ -392,6 +392,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .on "error", logAndKillError "SVG"
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
     .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
+    .pipe gulp_replace "<script src=\"source.js", "<script src=\"#{svgName}.js"
     .pipe gulp_replace "<script src", "<script defer src"
     .pipe cond prod, gulp_htmlmin
       collapseWhitespace: true
