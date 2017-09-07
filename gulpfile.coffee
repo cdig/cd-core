@@ -351,7 +351,7 @@ gulp.task "cd-module:svg", ()->
 
 
 # This task MUST be idempotent, since it overwrites the original file
-svga_beautify_svg = (cwd, svgName)-> ()->
+svga_beautify_svg = (cwd, svgName, dest)-> ()->
   fixFlashWeirdness gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "BEAUTIFY SVG"
     .pipe changed cwd + "/source"
@@ -362,7 +362,7 @@ svga_beautify_svg = (cwd, svgName)-> ()->
     .pipe gulp.dest cwd + "/source"
 
 
-svga_coffee_source = (cwd, svgName)-> ()->
+svga_coffee_source = (cwd, svgName, dest)-> ()->
   gulp.src cwd + "/" + svga_paths.coffee
     .on "error", logAndKillError "COFFEE"
     .pipe gulp_natural_sort()
@@ -373,7 +373,7 @@ svga_coffee_source = (cwd, svgName)-> ()->
       path.basename = svgName
       path
     .pipe emitMaps()
-    .pipe gulp.dest "public/svga"
+    .pipe gulp.dest dest
     .pipe stream "**/*.js"
     .pipe notify "Coffee"
 
@@ -381,7 +381,7 @@ svga_coffee_source = (cwd, svgName)-> ()->
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
   libs = gulp.src svga_paths.libs
     .on "error", logAndKillError "SVG LIBS"
-    .pipe gulp.dest "public/svga/_libs"
+    .pipe gulp.dest "#{dest}/_libs"
   svgSource = gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "SVG SOURCE"
     .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
@@ -389,7 +389,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
   gulp.src svga_paths.wrapper
     .on "error", logAndKillError "SVG"
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
-    .pipe gulp_inject libs, name: "libs", ignorePath: "public/svga", addRootSlash: false
+    .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src", "<script defer src"
     .pipe cond prod, gulp_htmlmin
       collapseWhitespace: true
@@ -411,19 +411,19 @@ gulp.task "cd-module:svga-check", (cb)->
   
 gulp.task "cd-module:svga:beautify", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_beautify_svg(folder, path.basename(folder))()
+    merge_stream svgas.map (folder)-> svga_beautify_svg(folder, path.basename(folder), "public/svga/")()
   else
     cb()
 
 gulp.task "cd-module:svga:coffee", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_coffee_source(folder, path.basename(folder))()
+    merge_stream svgas.map (folder)-> svga_coffee_source(folder, path.basename(folder), "public/svga/")()
   else
     cb()
 
 gulp.task "cd-module:svga:wrap", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder), "public/svga")()
+    merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder), "public/svga/")()
   else
     cb()
 
@@ -432,8 +432,8 @@ gulp.task "cd-module:svga:build",
   gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
 
 
-gulp.task "svga:beautify", svga_beautify_svg ".", "index"
-gulp.task "svga:coffee", svga_coffee_source ".", "index"
+gulp.task "svga:beautify", svga_beautify_svg ".", "index", "public"
+gulp.task "svga:coffee", svga_coffee_source ".", "index", "public"
 gulp.task "svga:wrap", svga_wrap_svg ".", "index", "public"
 
 gulp.task "svga:build",
