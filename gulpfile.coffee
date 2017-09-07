@@ -40,6 +40,8 @@ indexName = null
 # CONFIG ##########################################################################################
 
 
+era = "v4-1"
+
 # Assets that should just be copied straight from source to public with no processing
 basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,woff2"
 
@@ -481,7 +483,7 @@ gulp.task "deploy:finish", ()->
     .on "error", logAndKillError "REV FINISH"
     .pipe gulp_rev_all.revision
       transformPath: (rev, source, path)-> # Applies to file references inside HTML/CSS/JS
-        rev.replace /.*\//, "https://cdn.lunchboxsessions.com/v4-1/"
+        "https://cdn.lunchboxsessions.com/#{era}/" + rev.replace(/.*\//, "")
       transformFilename: (file, hash)-> # Applies to the files themselves
         name = file.revHash + file.extname
         if file.revPathOriginal.indexOf("/deploy/temp/index.html") > 0
