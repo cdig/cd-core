@@ -460,7 +460,7 @@ gulp.task "deploy:copy", ()->
 gulp.task "deploy:optim:js", ()->
   gulp.src "public/**/*.js"
     .on "error", logAndKillError "REV OPTIM JS"
-    .pipe gulp_uglify()
+    # .pipe gulp_uglify()
     .pipe gulp.dest "deploy/temp"
 
 
