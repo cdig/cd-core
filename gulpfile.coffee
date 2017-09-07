@@ -378,7 +378,7 @@ svga_coffee_source = (cwd, svgName)-> ()->
     .pipe notify "Coffee"
 
 
-svga_wrap_svg = (cwd, svgName)-> ()->
+svga_wrap_svg = (cwd, svgName, dest)-> ()->
   libs = gulp.src svga_paths.libs
     .on "error", logAndKillError "SVG LIBS"
     .pipe gulp.dest "public/svga/_libs"
@@ -401,7 +401,7 @@ svga_wrap_svg = (cwd, svgName)-> ()->
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
-    .pipe gulp.dest "public/svga"
+    .pipe gulp.dest dest
     .pipe notify "SVG"
 
 
@@ -424,7 +424,7 @@ gulp.task "cd-module:svga:coffee", (cb)->
 
 gulp.task "cd-module:svga:wrap", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder))()
+    merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder), "public/svga")()
   else
     cb()
 
@@ -435,7 +435,7 @@ gulp.task "cd-module:svga:build",
 
 gulp.task "svga:beautify", svga_beautify_svg ".", "index"
 gulp.task "svga:coffee", svga_coffee_source ".", "index"
-gulp.task "svga:wrap", svga_wrap_svg ".", "index"
+gulp.task "svga:wrap", svga_wrap_svg ".", "index", "public"
 
 gulp.task "svga:build",
   gulp.series "svga:beautify", "svga:coffee", "svga:wrap"
