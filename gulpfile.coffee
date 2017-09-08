@@ -394,7 +394,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
     .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src", "<script defer src"
-    .pipe gulp_replace "src=\"source.js", "src=\"#{svgName}.js"
+    .pipe gulp_replace "src=\"svga-js/source.js", "src=\"svga-js/#{svgName}.js"
     .pipe cond prod, gulp_htmlmin
       collapseWhitespace: true
       collapseBooleanAttributes: true
@@ -421,7 +421,7 @@ gulp.task "cd-module:svga:beautify", (cb)->
 
 gulp.task "cd-module:svga:coffee", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
-    merge_stream svgas.map (folder)-> svga_coffee_source(folder, path.basename(folder), "public/svga/")()
+    merge_stream svgas.map (folder)-> svga_coffee_source(folder, path.basename(folder), "public/svga/svga-js")()
   else
     cb()
 
@@ -437,7 +437,7 @@ gulp.task "cd-module:svga:build",
 
 
 gulp.task "svga:beautify", svga_beautify_svg ".", "index", "public"
-gulp.task "svga:coffee", svga_coffee_source ".", "index", "public"
+gulp.task "svga:coffee", svga_coffee_source ".", "index", "public/svga-js"
 gulp.task "svga:wrap", svga_wrap_svg ".", "index", "public"
 
 gulp.task "svga:build",
