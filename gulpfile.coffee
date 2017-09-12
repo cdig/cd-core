@@ -63,6 +63,7 @@ module_paths =
       "node_modules/take-and-make/dist/take-and-make.js"
       "node_modules/normalize.css/normalize.css"
       "node_modules/cd-reset/dist/cd-reset.css"
+      "node_modules/fonts/dist/fonts.css"
     ]
     index: "source/index.kit"
     packHtml: "node_modules/cd-module/pack/**/*.html"
@@ -89,6 +90,7 @@ svga_paths =
   coffee: "source/**/*.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
+    "node_modules/fonts/dist/fonts.css"
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
   ]
