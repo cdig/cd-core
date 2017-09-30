@@ -587,7 +587,7 @@ gulp.task "cd-module:prod", (cb)->
 
 
 gulp.task "svga:watch", (cb)->
-  gulp.watch dev_paths.watch, gulp.series "copy-dev"
+  gulp.watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
   gulp.watch svga_paths.coffee, gulp.series "svga:coffee", "reload"
   gulp.watch svga_paths.libs, gulp.series "svga:wrap", "reload"
   gulp.watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
