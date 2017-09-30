@@ -29,6 +29,7 @@
     "gulp-svgmin": "",
     "gulp-uglify": "",
     "gulp-util": "",
-    "merge-stream": ""
+    "merge-stream": "",
+    "svgi": ""
   }
 }
