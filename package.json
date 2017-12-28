@@ -14,7 +14,7 @@
     "gulp-autoprefixer": "",
     "gulp-changed": "",
     "gulp-clean-css": "",
-    "gulp-coffee": "",
+    "gulp-coffee": "2.3.4",
     "gulp-concat": "",
     "gulp-htmlmin": "",
     "gulp-inject": "",
