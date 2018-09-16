@@ -56,6 +56,7 @@ module_paths =
     "source/**/*.{#{basicAssetTypes}}"
   ]
   coffee: [
+    "node_modules/doom/doom.coffee"
     "node_modules/cd-module/pack/**/*.coffee"
     "source/**/*.coffee"
   ]
