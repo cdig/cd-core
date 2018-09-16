@@ -243,6 +243,8 @@ notify = (msg)->
 fixFlashWeirdness = (src)->
   src
     .on "error", logAndKillError "SVG"
+    .pipe gulp_replace "Comic_Sans_MS_Regular", "Comic Sans MS, sans-serif"
+    .pipe gulp_replace "Comic_Sans_MS_Bold_Bold", "Comic Sans MS, sans-serif"
     .pipe gulp_replace "Lato_Hairline_Regular", "Lato, sans-serif\" font-weight=\"200"
     .pipe gulp_replace "Lato_Hairline_Italic", "Lato, sans-serif\" font-weight=\"200"
     .pipe gulp_replace "Lato_Thin_Regular", "Lato, sans-serif\" font-weight=\"200"
