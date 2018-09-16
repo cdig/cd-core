@@ -352,6 +352,7 @@ gulp.task "cd-module:svg", ()->
     # svgmin stabilizes after 2 runs
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
+    .pipe gulp_replace '<svg', '<svg style="text-rendering: geometricPrecision;"'
     .pipe gulp.dest "public"
 
 
