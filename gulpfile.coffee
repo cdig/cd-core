@@ -578,7 +578,7 @@ gulp.task "serve", (cb)->
     ghostMode: false
     notify: false
     server: baseDir: "public"
-    ui: false
+    # ui: false
     watchOptions: ignoreInitial: true
   cb()
 
