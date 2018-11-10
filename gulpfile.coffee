@@ -347,7 +347,17 @@ gulp.task "cd-module:svg", ()->
     # svgmin stabilizes after 2 runs
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
-    .pipe gulp_replace '<svg', '<svg style="text-rendering: geometricPrecision;"'
+    .pipe gulp_replace '</svg>', """
+        <style>
+          text-rendering: geometricPrecision;
+          @font-face { font-family: "Architect's Daughter"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/architects-daughter/architects-daughter.woff2") format("woff2"); }
+          @font-face { font-family: "Helsinki"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/helsinki/helsinki.woff"); }
+          @font-face { font-family: "Lato"; font-weight: bold; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/lato/lato-bold.woff2") format("woff2"); }
+          @font-face { font-family: "Lato"; font-weight: normal; font-style: italic; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/lato/lato-italic.woff2") format("woff2"); }
+          @font-face { font-family: "Lato"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/lato/lato-regular.woff2") format("woff2"); }
+          @font-face { font-family: "Rock Salt"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/rock-salt/rock-salt.woff") format("woff"); }
+        </style>
+      </svg>"""
     .pipe gulp.dest "public"
 
 
