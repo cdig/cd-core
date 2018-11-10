@@ -100,81 +100,60 @@ svga_paths =
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
-  {cleanupAttrs: true}
-  {removeDoctype: true}
-  {removeXMLProcInst: true}
-  {removeComments: true}
-  {removeMetadata: true}
-  {removeTitle: true} # disabled by default
-  {removeDesc: true}
-  {removeUselessDefs: true}
-  # {removeXMLNS: true} # for inline SVG, disabled by default
-  {removeEditorsNSData: true}
-  {removeEmptyAttrs: true}
-  {removeHiddenElems: true}
-  # {removeEmptyText: true}
-  {removeEmptyContainers: true}
-  # {removeViewBox: true} # disabled by default
   {cleanUpEnableBackground: true}
-  # {minifyStyles: true}
-  # {convertStyleToAttrs: true}
+  {cleanupAttrs: true}
+  {cleanupListOfValues: floatPrecision: 1}
+  {cleanupNumericValues: floatPrecision: 2}
   {convertColors: names2hex: true, rgb2hex: true}
   {convertPathData:
-    applyTransforms: true
-    applyTransformsStroked: true
-    makeArcs: {
-      threshold: 20 # coefficient of rounding error
-      tolerance: 10  # percentage of radius
-    }
-    straightCurves: true
-    lineShorthands: true
-    curveSmoothShorthands: true
-    floatPrecision: 2
-    transformPrecision: 2
-    removeUseless: true
-    collapseRepeated: true
-    utilizeAbsolute: true
-    leadingZero: false
-    negativeExtraSpace: true
+    transformPrecision: 4
+    floatPrecision: 1
   }
+  {convertShapeToPath: true}
+  {convertStyleToAttrs: true}
   {convertTransform:
-    convertToShorts: true
-    degPrecision: 2 # transformPrecision (or matrix precision) - 2 by default
-    floatPrecision: 2
-    transformPrecision: 2
-    matrixToTransform: false # Might want to try setting to true
-    shortTranslate: true
-    shortScale: true
-    shortRotate: true
-    removeUseless: true
-    collapseIntoOne: true
-    leadingZero: false
-    negativeExtraSpace: false
+    transformPrecision: 4 # for scale and four first matrix parameters (needs a better precision due to multiplying)
+    floatPrecision: 1 # for translate including two last matrix and rotate parameters
+    degPrecision: 1 # for rotate and skew. By default it's equal to (rougly) transformPrecision - 2 or floatPrecision whichever is lower. Can be set in params.
   }
-  {cleanupNumericValues: floatPrecision: 2}
+  {mergePaths: true}
+  {minifyStyles: true}
+  {removeComments: true}
+  {removeDesc: true}
+  {removeDoctype: true}
+  {removeEditorsNSData: true}
+  {removeEmptyAttrs: true}
+  {removeEmptyContainers: true}
+  {removeHiddenElems: true}
+  {removeMetadata: true}
+  {removeNonInheritableGroupAttrs: true}
+  {removeRasterImages: true}
+  {removeScriptElement: true}
+  {removeTitle: true} # disabled by default
+  {removeUnknownsAndDefaults: true}
+  {removeUnusedNS: true}
+  {removeUselessDefs: true}
+  {removeXMLProcInst: true}
   {sortAttrs: true}
-  # {transformsWithOnePath: true} # disabled by default
-  # {removeDimensions: true} # disabled by default
-  # {removeAttrs: attrs: []} # disabled by default
-  # {removeElementsByAttr: id: [], class: []} # disabled by default
-  # {addClassesToSVGElement: classNames: []} # disabled by default
-  # {addAttributesToSVGElement: attributes: []} # disabled by default
-  # {removeStyleElement: true} # disabled by default
+
+  # disabled by default
+  # {addAttributesToSVGElement: attributes: []}
+  # {addClassesToSVGElement: classNames: []}
+  # {removeAttrs: attrs: []}
+  # {removeDimensions: true}
+  # {removeElementsByAttr: id: [], class: []}
+  # {removeStyleElement: true}
+  # {removeViewBox: true}
+  # {removeXMLNS: true} # for inline SVG
 ]
 
 cd_module_svg_plugins = svg_plugins.concat [
-  {removeUnknownsAndDefaults: true}
-  {removeNonInheritableGroupAttrs: true}
-  {removeUselessStrokeAndFill: true}
-  {removeUnusedNS: true}
   {cleanupIDs: true}
-  {cleanupListOfValues: floatPrecision: 2}
+  {collapseGroups: true}
   {moveElemsAttrsToGroup: true}
   {moveGroupAttrsToElems: true}
-  {collapseGroups: true}
-  {removeRasterImages: true} # disabled by default
-  {mergePaths: true}
-  {convertShapeToPath: true}
+  {removeEmptyText: true}
+  {removeUselessStrokeAndFill: true}
 ]
 
 gulp_notify.logLevel(0)
