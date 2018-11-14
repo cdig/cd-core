@@ -115,6 +115,7 @@ svg_plugins = [
     transformPrecision: 4 # for scale and four first matrix parameters (needs a better precision due to multiplying)
     floatPrecision: 1 # for translate including two last matrix and rotate parameters
     degPrecision: 1 # for rotate and skew. By default it's equal to (rougly) transformPrecision - 2 or floatPrecision whichever is lower. Can be set in params.
+    matrixToTransform: false
   }
   {mergePaths: true}
   {minifyStyles: true}
