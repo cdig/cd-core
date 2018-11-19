@@ -130,8 +130,7 @@ svg_plugins = [
   {removeNonInheritableGroupAttrs: true}
   {removeRasterImages: true}
   {removeScriptElement: true}
-  {removeTitle: true} # disabled by default
-  {removeUnknownsAndDefaults: true}
+  {removeTitle: true}
   {removeUnusedNS: true}
   {removeUselessDefs: true}
   {removeXMLProcInst: true}
@@ -154,6 +153,7 @@ cd_module_svg_plugins = svg_plugins.concat [
   {moveElemsAttrsToGroup: true}
   {moveGroupAttrsToElems: true}
   {removeEmptyText: true}
+  {removeUnknownsAndDefaults: true}
   {removeUselessStrokeAndFill: true}
 ]
 
