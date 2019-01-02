@@ -399,7 +399,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp.dest "#{dest}/_libs"
   svgSource = gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "SVG SOURCE"
-    .pipe gulp_replace "</defs>", "</defs>\n<g id=\"root\">"
+    .pipe gulp_replace /<svg.*?>/, (v)-> v + "\n<g id=\"root\">"
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
     .pipe gulp_replace "<svg ", "<svg id=\"svga\" "
     .pipe gulp_replace "<svg", (tag)->
