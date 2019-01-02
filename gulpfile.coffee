@@ -258,7 +258,6 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "Lato_Black_Regular", "Lato, sans-serif\" font-weight=\"900"
     .pipe gulp_replace "Lato_Black_Italic", "Lato, sans-serif\" font-weight=\"900"
     .pipe gulp_replace "MEMBER_", "M_"
-    .pipe gulp_replace "Layer", "L"
     .pipe gulp_replace "STROKES", "S"
     .pipe gulp_replace "FILL", "F"
     .pipe gulp_replace "writing-mode=\"lr\"", ""
@@ -393,13 +392,21 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe notify "Coffee"
 
 
+rootMade = false
+makeRoot = (v)->
+  return v if rootMade
+  rootMade = true
+  v + "\n<g id=\"root\">"
+
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
   libs = gulp.src svga_paths.libs
     .on "error", logAndKillError "SVG LIBS"
     .pipe gulp.dest "#{dest}/_libs"
+  rootMade = false
   svgSource = gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "SVG SOURCE"
-    .pipe gulp_replace /<svg.*?>/, (v)-> v + "\n<g id=\"root\">"
+    .pipe gulp_replace "</defs>", makeRoot
+    .pipe gulp_replace /<svg.*?>/, makeRoot
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
     .pipe gulp_replace "<svg ", "<svg id=\"svga\" "
     .pipe gulp_replace "<svg", (tag)->
