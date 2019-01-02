@@ -132,7 +132,6 @@ svg_plugins = [
   {removeScriptElement: true}
   {removeTitle: true}
   {removeUnusedNS: true}
-  {removeUselessDefs: true}
   {removeXMLProcInst: true}
   {sortAttrs: true}
 
@@ -154,6 +153,7 @@ cd_module_svg_plugins = svg_plugins.concat [
   {moveGroupAttrsToElems: true}
   {removeEmptyText: true}
   {removeUnknownsAndDefaults: true}
+  {removeUselessDefs: true}
   {removeUselessStrokeAndFill: true}
 ]
 
