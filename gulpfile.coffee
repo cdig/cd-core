@@ -393,17 +393,17 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe notify "Coffee"
 
 
-rootMade = false
-makeRoot = (v)->
-  return v if rootMade
-  rootMade = true
-  v + "\n<g id=\"root\">"
-
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
+  # We wrap this up in our current scope so that multiple SVGs being processed in parallel don't fight over the rootMade global
+  rootMade = false
+  makeRoot = (v)->
+    return v if rootMade
+    rootMade = true
+    v + "\n<g id=\"root\">"
+
   libs = gulp.src svga_paths.libs
     .on "error", logAndKillError "SVG LIBS"
     .pipe gulp.dest "#{dest}/_libs"
-  rootMade = false
   svgSource = gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "SVG SOURCE"
     .pipe gulp_replace "</defs>", makeRoot
