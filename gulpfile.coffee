@@ -349,9 +349,9 @@ gulp.task "cd-module:svg", ()->
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     # Keep this in sync with https://github.com/cdig/fonts
+    .pipe gulp_replace "<svg", '<svg text-rendering="geometricPrecision"'
     .pipe gulp_replace '</svg>', """
         <style>
-          text-rendering: geometricPrecision;
           @font-face { font-family: "Architect's Daughter"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/architects-daughter/architects-daughter.woff2") format("woff2"); }
           @font-face { font-family: "ArchitectsDaughter"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/architects-daughter/architects-daughter.woff2") format("woff2"); }
           @font-face { font-family: "Helsinki"; font-weight: normal; font-style: normal; src: url("https://lunchboxsessions.s3.amazonaws.com/fonts/helsinki/helsinki.woff"); }
@@ -372,7 +372,7 @@ svga_beautify_svg = (cwd, svgName, dest)-> ()->
   fixFlashWeirdness gulp.src "#{cwd}/#{svga_paths.svg}", ignore: "source/icon.svg"
     .on "error", logAndKillError "BEAUTIFY SVG"
     .pipe changed cwd + "/source"
-    .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" $1>'
+    .pipe gulp_replace /<svg .*?(width=.+? height=.+?").*?>/, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Lato, sans-serif" text-rendering="geometricPrecision" $1>'
     # svgmin stabilizes after 2 runs
     .pipe gulp_svgmin full: true, js2svg: { pretty: true, indent: "  " }, plugins: svg_plugins
     .pipe gulp_svgmin full: true, js2svg: { pretty: true, indent: "  " }, plugins: svg_plugins
