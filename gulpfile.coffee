@@ -186,7 +186,7 @@ cond = (predicate, cb)->
   if predicate then cb else gulp_util.noop()
 
 changed = (path = "public")->
-  cond watchingPublic, gulp_changed path
+  cond watchingPublic, gulp_changed path, hasChanged: gulp_changed.compareContents
 
 delSync = (path)->
   if fs.existsSync path
