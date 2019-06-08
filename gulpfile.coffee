@@ -497,7 +497,7 @@ gulp.task "deploy:optim:css", ()->
   gulp.src "public/**/*.css"
     .on "error", logAndKillError "REV OPTIM CSS"
     .pipe gulp_autoprefixer
-      browsers: "Android >= 4.4, Chrome >= 44, ChromeAndroid >= 44, Edge >= 12, ExplorerMobile >= 11, IE >= 11, Firefox >= 40, iOS >= 9, Safari >= 9"
+      overrideBrowserslist: "Chrome >= 42, ChromeAndroid >= 64, Edge >= 14, Firefox >= 48, FirefoxAndroid >= 57, IE >= 11, iOS >= 10, Opera >= 48, Safari >= 10, UCAndroid >= 11"
       cascade: false
       remove: false
     .pipe gulp_clean_css
