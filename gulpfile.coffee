@@ -128,7 +128,7 @@ svg_plugins = [
   {removeHiddenElems: true}
   {removeMetadata: true}
   {removeNonInheritableGroupAttrs: true}
-  {removeRasterImages: true}
+  # {removeRasterImages: true} # we need raster images for things like 3d mimics
   {removeScriptElement: true}
   {removeTitle: true}
   {removeUnusedNS: true}
