@@ -8,7 +8,7 @@
     "beepbeep": "",
     "browser-sync": "",
     "chalk": "",
-    "coffee-script": "",
+    "coffeescript": "",
     "glob": "",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-autoprefixer": "",
