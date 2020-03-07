@@ -22,11 +22,11 @@ gulp_sass = require "gulp-sass"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_uglify = require "gulp-uglify"
-gulp_util = require "gulp-util"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 merge_stream = require "merge-stream"
 path = require "path"
 SVGI = require "svgi"
+through2 = require "through2"
 
 
 # STATE ###########################################################################################
@@ -183,7 +183,7 @@ logAndKillError = (type, full = true)-> (err)->
   @emit "end"
 
 cond = (predicate, cb)->
-  if predicate then cb else gulp_util.noop()
+  if predicate then cb else through2.obj()
 
 changed = (path = "public")->
   cond watchingPublic, gulp_changed path, hasChanged: gulp_changed.compareContents
