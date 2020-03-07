@@ -18,7 +18,7 @@
     "gulp-concat": "",
     "gulp-htmlmin": "",
     "gulp-inject": "",
-    "gulp-kit": "",
+    "gulp-kit": "ivanreese/gulp-kit",
     "gulp-natural-sort": "",
     "gulp-notify": "",
     "gulp-rename": "",
@@ -31,5 +31,8 @@
     "gulp-util": "",
     "merge-stream": "",
     "svgi": ""
+  },
+  "resolutions": {
+    "node-sass": "sass/node-sass#v5"
   }
 }
