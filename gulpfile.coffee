@@ -21,7 +21,7 @@ gulp_rev_all = require "gulp-rev-all"
 gulp_sass = require "gulp-sass"
 gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
-gulp_uglify = require "gulp-uglify"
+gulp_terser = require "gulp-terser"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 merge_stream = require "merge-stream"
 path = require "path"
@@ -489,7 +489,7 @@ gulp.task "deploy:optim:js", ()->
   gulp.src "public/**/*.js"
     .on "error", logAndKillError "REV OPTIM JS"
     .pipe gulp_replace /^(.)/, '"use strict";$1' # We'd prefer to do this in dev, but that messes with source maps
-    .pipe gulp_uglify()
+    .pipe gulp_terser()
     .pipe gulp.dest "deploy/temp"
 
 

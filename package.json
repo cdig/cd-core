@@ -27,7 +27,7 @@
     "gulp-sass": "",
     "gulp-sourcemaps": "",
     "gulp-svgmin": "",
-    "gulp-uglify": "",
+    "gulp-terser": "",
     "merge-stream": "",
     "svgi": ""
   },
