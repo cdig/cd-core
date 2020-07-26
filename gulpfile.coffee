@@ -89,10 +89,9 @@ module_paths =
     ]
 
 svga_paths =
-  coffee: [
-    "node_modules/doom/doom.coffee"
-    "source/**/*.coffee"
-  ]
+  coffee:
+    source: "source/**/*.coffee"
+    libs: "node_modules/doom/doom.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
     "node_modules/fonts/dist/fonts.css"
@@ -383,7 +382,8 @@ svga_beautify_svg = (cwd, svgName, dest)-> ()->
 
 
 svga_coffee_source = (cwd, svgName, dest)-> ()->
-  gulp.src cwd + "/" + svga_paths.coffee
+  sourceFullPath = cwd + "/" + svga_paths.coffee.source
+  gulp.src [].concat sourceFullPath, svga_paths.coffee.libs
     .on "error", logAndKillError "COFFEE"
     .pipe gulp_natural_sort()
     .pipe initMaps()
@@ -621,7 +621,7 @@ gulp.task "cd-module:prod", (cb)->
 
 gulp.task "svga:watch", (cb)->
   gulp.watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
-  gulp.watch svga_paths.coffee, gulp.series "svga:coffee", "reload"
+  gulp.watch svga_paths.coffee.source, gulp.series "svga:coffee", "reload"
   gulp.watch svga_paths.libs, gulp.series "svga:wrap", "reload"
   gulp.watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
   gulp.watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
