@@ -89,7 +89,10 @@ module_paths =
     ]
 
 svga_paths =
-  coffee: "source/**/*.coffee"
+  coffee: [
+    "node_modules/doom/doom.coffee"
+    "source/**/*.coffee"
+  ]
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
     "node_modules/fonts/dist/fonts.css"
