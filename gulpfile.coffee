@@ -48,7 +48,7 @@ basicAssetTypes = "css,gif,jpeg,jpg,json,m4v,min.html,mp3,mp4,pdf,png,swf,woff,w
 
 dev_paths =
   gulp: ["dev/*/gulpfile.coffee", "!dev/cd-core/**"]
-  watch: ["dev/*/{dist,pack}/**", "dev/cd-core/*.coffee"] # We can't say cd-core/gulpfile.coffee or it fails when we aren't doing cd-core dev
+  watch: ["dev/*/{dist,lib,pack}/**", "dev/cd-core/*.coffee"] # We can't say cd-core/gulpfile.coffee or it fails when we aren't doing cd-core dev
 
 module_paths =
   basicAssets: [
@@ -90,14 +90,17 @@ module_paths =
 
 svga_paths =
   coffee:
-    source: "source/**/*.coffee"
     libs: "node_modules/doom/doom.coffee"
+    source: "source/**/*.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
     "node_modules/fonts/dist/fonts.css"
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
   ]
+  scss:
+    libs: "node_modules/svga/lib/_vars.scss"
+    source: "source/**/*.scss"
   svg: "source/**/*.svg"
   wrapper: "node_modules/svga/dist/index.html"
 
@@ -398,6 +401,23 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe notify "Coffee"
 
 
+svga_scss_source = (cwd, svgName, dest)-> ()->
+  gulp.src [].concat svga_paths.scss.libs, "#{cwd}/#{svga_paths.scss.source}"
+    .on "error", logAndKillError "SCSS", false
+    .pipe gulp_natural_sort()
+    .pipe initMaps()
+    .pipe gulp_concat "styles.scss"
+    .pipe gulp_sass
+      precision: 2
+    .pipe gulp_rename (path)->
+      path.basename = svgName
+      path
+    .pipe emitMaps()
+    .pipe gulp.dest dest
+    .pipe stream "**/*.css"
+    .pipe notify "SCSS"
+
+
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
   # We wrap this up in our current scope so that multiple SVGs being processed in parallel don't fight over the rootMade global
   rootMade = false
@@ -424,6 +444,7 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp_inject svgSource, name: "source", transform: fileContents
     .pipe gulp_inject libs, name: "libs", ignorePath: dest, addRootSlash: false
     .pipe gulp_replace "<script src", "<script defer src"
+    .pipe gulp_replace "href=\"svga-css/source.css", "href=\"svga-css/#{svgName}.css"
     .pipe gulp_replace "src=\"svga-js/source.js", "src=\"svga-js/#{svgName}.js"
     .pipe cond prod, gulp_htmlmin
       collapseWhitespace: true
@@ -455,6 +476,12 @@ gulp.task "cd-module:svga:coffee", (cb)->
   else
     cb()
 
+gulp.task "cd-module:svga:scss", (cb)->
+  if (svgas = glob.sync(module_paths.svga.projects)).length > 0
+    merge_stream svgas.map (folder)-> svga_scss_source(folder, path.basename(folder), "public/svga/svga-css")()
+  else
+    cb()
+
 gulp.task "cd-module:svga:wrap", (cb)->
   if (svgas = glob.sync(module_paths.svga.projects)).length > 0
     merge_stream svgas.map (folder)-> svga_wrap_svg(folder, path.basename(folder), "public/svga/")()
@@ -463,15 +490,16 @@ gulp.task "cd-module:svga:wrap", (cb)->
 
 
 gulp.task "cd-module:svga:build",
-  gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:wrap"
+  gulp.series "cd-module:svga:beautify", "cd-module:svga:coffee", "cd-module:svga:scss", "cd-module:svga:wrap"
 
 
 gulp.task "svga:beautify", svga_beautify_svg ".", "index", "public"
 gulp.task "svga:coffee", svga_coffee_source ".", "index", "public/svga-js"
+gulp.task "svga:scss", svga_scss_source ".", "index", "public/svga-css"
 gulp.task "svga:wrap", svga_wrap_svg ".", "index", "public"
 
 gulp.task "svga:build",
-  gulp.series "svga:beautify", "svga:coffee", "svga:wrap"
+  gulp.series "svga:beautify", "svga:coffee", "svga:scss", "svga:wrap"
 
 
 # TASKS: DEPLOY ###################################################################################
@@ -623,6 +651,7 @@ gulp.task "svga:watch", (cb)->
   gulp.watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
   gulp.watch svga_paths.coffee.source, gulp.series "svga:coffee", "reload"
   gulp.watch svga_paths.libs, gulp.series "svga:wrap", "reload"
+  gulp.watch svga_paths.scss.source, gulp.series "svga:scss"
   gulp.watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
   gulp.watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
   cb()
