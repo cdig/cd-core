@@ -262,6 +262,7 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "Lato_Heavy_Italic", "Lato, sans-serif\" font-weight=\"700"
     .pipe gulp_replace "Lato_Black_Regular", "Lato, sans-serif\" font-weight=\"900"
     .pipe gulp_replace "Lato_Black_Italic", "Lato, sans-serif\" font-weight=\"900"
+    .pipe gulp_replace /<text clip-path=".*?"/g, '<text'
     .pipe gulp_replace "MEMBER_", "M_"
     .pipe gulp_replace "Layer", "L"
     .pipe gulp_replace "STROKES", "S"
