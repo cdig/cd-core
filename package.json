@@ -9,6 +9,7 @@
     "beepbeep": "",
     "browser-sync": "",
     "chalk": "",
+    "chokidar": "^3.5.1",
     "coffeescript": "",
     "glob": "",
     "gulp": "github:gulpjs/gulp#4.0",

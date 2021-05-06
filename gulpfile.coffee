@@ -2,6 +2,7 @@
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
+chokidar = require "chokidar"
 child_process = require "child_process"
 fs = require "fs"
 glob = require "glob"
@@ -275,6 +276,28 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "kerning=\"0\"", ""
     .pipe gulp_replace "xml:space=\"preserve\"", ""
     .pipe gulp_replace "fill-opacity=\".99\"", "" # This is close enough to 1 that it's not worth the cost
+
+
+# WATCHING ########################################################################################
+
+
+queue = []
+tasksRunning = false
+
+runTasks = ()->
+  if queue.length > 0
+    tasksRunning = true
+    task = queue.shift()
+    await new Promise (resolve)-> task resolve
+    runTasks()
+  else
+    tasksRunning = false
+
+watch = (paths, task)->
+  chokidar.watch(paths, ignoreInitial:true).on "all", ()->
+    if task not in queue
+      queue.push task
+      runTasks() unless tasksRunning
 
 
 # TASKS: MODULE COMPILATION #######################################################################
@@ -620,13 +643,13 @@ gulp.task "serve", (cb)->
 
 
 gulp.task "cd-module:watch", (cb)->
-  gulp.watch module_paths.basicAssets, gulp.series "cd-module:basic-assets"
-  gulp.watch module_paths.coffee, gulp.series "cd-module:coffee"
-  gulp.watch dev_paths.watch, gulp.series "copy-dev"
-  gulp.watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
-  gulp.watch module_paths.scss, gulp.series "cd-module:scss"
-  gulp.watch module_paths.svg, gulp.series "cd-module:svg", "reload"
-  gulp.watch module_paths.svga.watch, gulp.series "cd-module:svga:build", "reload"
+  watch module_paths.basicAssets, gulp.series "cd-module:basic-assets"
+  watch module_paths.coffee, gulp.series "cd-module:coffee"
+  watch dev_paths.watch, gulp.series "copy-dev"
+  watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
+  watch module_paths.scss, gulp.series "cd-module:scss"
+  watch module_paths.svg, gulp.series "cd-module:svg", "reload"
+  watch module_paths.svga.watch, gulp.series "cd-module:svga:build", "reload"
   cb()
 
 
@@ -650,12 +673,12 @@ gulp.task "cd-module:prod", (cb)->
 
 
 gulp.task "svga:watch", (cb)->
-  gulp.watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
-  gulp.watch svga_paths.coffee.source, gulp.series "svga:coffee", "reload"
-  gulp.watch svga_paths.libs, gulp.series "svga:wrap", "reload"
-  gulp.watch svga_paths.scss.source, gulp.series "svga:scss"
-  gulp.watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
-  gulp.watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
+  watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
+  watch svga_paths.coffee.source, gulp.series "svga:coffee", "reload"
+  watch svga_paths.libs, gulp.series "svga:wrap", "reload"
+  watch svga_paths.scss.source, gulp.series "svga:scss"
+  watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
+  watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
   cb()
 
 
