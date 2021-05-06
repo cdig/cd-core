@@ -179,10 +179,6 @@ logAndKillError = (type, full = true)-> (err)->
   beepbeep()
   console.log chalk.red("\n ERROR IN YOUR #{type} 😱")
   console.log (if full then err.toString() else err.message).replace pwd, ""
-  notifyErr type, err
-  @emit "end"
-
-notifyErr = (type, err)->
   gulp_notify.onError(
     emitError: true
     icon: false
@@ -190,6 +186,7 @@ notifyErr = (type, err)->
     title: "😱 #{type} ERROR"
     wait: true
     )(err)
+  @emit "end"
 
 cond = (predicate, cb)->
   if predicate then cb else through2.obj()
@@ -362,11 +359,11 @@ gulp.task "cd-module:kit:fix", ()->
 # Compile scss in source and asset packs, with sourcemaps in dev and autoprefixer in prod
 gulp.task "cd-module:scss", ()->
   gulp.src module_paths.scss
-    .on "error", notifyErr "SCSS"
+    .on "error", logAndKillError "SCSS", false
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
-    .pipe sassSync(precision: 2).on("error", sassSync.logError)
+    .pipe sassSync(precision: 2).on "error", logAndKillError "SCSS", false
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.css"
@@ -429,11 +426,11 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
 
 svga_scss_source = (cwd, svgName, dest)-> ()->
   gulp.src [].concat svga_paths.scss.libs, "#{cwd}/#{svga_paths.scss.source}"
-    .on "error", notifyErr "SCSS"
+    .on "error", logAndKillError "SCSS", false
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
-    .pipe sassSync(precision: 2).on("error", sassSync.logError)
+    .pipe sassSync(precision: 2).on "error", logAndKillError "SCSS", false
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
