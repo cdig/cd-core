@@ -106,61 +106,58 @@ svga_paths =
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
-  {cleanUpEnableBackground: true}
-  {cleanupAttrs: true}
-  {cleanupListOfValues: floatPrecision: 1}
-  {cleanupNumericValues: floatPrecision: 2}
-  {convertColors: names2hex: true, rgb2hex: true}
-  {convertPathData:
-    transformPrecision: 4
-    floatPrecision: 1
-  }
-  {convertShapeToPath: true}
-  {convertStyleToAttrs: true}
-  {convertTransform:
+  "cleanupEnableBackground"
+  "cleanupAttrs"
+  {name:"cleanupListOfValues", params: floatPrecision: 1}
+  {name:"cleanupNumericValues", params: floatPrecision: 2}
+  {name:"convertColors", params: names2hex: true, rgb2hex: true}
+  {name:"convertPathData", params: transformPrecision: 4, floatPrecision: 1}
+  "convertShapeToPath"
+  "convertStyleToAttrs"
+  {name: "convertTransform", params:
     transformPrecision: 4 # for scale and four first matrix parameters (needs a better precision due to multiplying)
     floatPrecision: 1 # for translate including two last matrix and rotate parameters
     degPrecision: 1 # for rotate and skew. By default it's equal to (rougly) transformPrecision - 2 or floatPrecision whichever is lower. Can be set in params.
     matrixToTransform: false
   }
-  {mergePaths: true}
-  {minifyStyles: true}
-  {removeComments: true}
-  {removeDesc: true}
-  {removeDoctype: true}
-  {removeEditorsNSData: true}
-  {removeEmptyAttrs: true}
-  {removeEmptyContainers: true}
-  {removeHiddenElems: true}
-  {removeMetadata: true}
-  {removeNonInheritableGroupAttrs: true}
-  # {removeRasterImages: true} # we need raster images for things like 3d mimics
-  {removeScriptElement: true}
-  {removeTitle: true}
-  {removeUnusedNS: true}
-  {removeXMLProcInst: true}
-  {sortAttrs: true}
+  "mergePaths"
+  "minifyStyles"
+  "removeComments"
+  "removeDesc"
+  "removeDoctype"
+  "removeEditorsNSData"
+  "removeEmptyAttrs"
+  "removeEmptyContainers"
+  "removeHiddenElems"
+  "removeMetadata"
+  "removeNonInheritableGroupAttrs"
+  # "removeRasterImages" # we need raster images for things like 3d mimics
+  "removeScriptElement"
+  "removeTitle"
+  "removeUnusedNS"
+  "removeXMLProcInst"
+  "sortAttrs"
 
   # disabled by default
-  # {addAttributesToSVGElement: attributes: []}
-  # {addClassesToSVGElement: classNames: []}
-  # {removeAttrs: attrs: []}
-  # {removeDimensions: true}
-  # {removeElementsByAttr: id: [], class: []}
-  # {removeStyleElement: true}
-  # {removeViewBox: true}
-  # {removeXMLNS: true} # for inline SVG
+  # {name: "addAttributesToSVGElement", params: attributes: []}
+  # {name: "addClassesToSVGElement", params: classNames: []}
+  # {name: "removeAttrs", params: attrs: []}
+  # "removeDimensions"
+  # {name: "removeElementsByAttr", params: id: [], class: []}
+  # "removeStyleElement"
+  # "removeViewBox"
+  # "removeXMLNS" # for inline SVG
 ]
 
 cd_module_svg_plugins = svg_plugins.concat [
-  {cleanupIDs: true}
-  {collapseGroups: true}
-  {moveElemsAttrsToGroup: true}
-  {moveGroupAttrsToElems: true}
-  {removeEmptyText: true}
-  {removeUnknownsAndDefaults: true}
-  {removeUselessDefs: true}
-  {removeUselessStrokeAndFill: true}
+  "cleanupIDs"
+  "collapseGroups"
+  "moveElemsAttrsToGroup"
+  "moveGroupAttrsToElems"
+  "removeEmptyText"
+  "removeUnknownsAndDefaults"
+  "removeUselessDefs"
+  "removeUselessStrokeAndFill"
 ]
 
 gulp_notify.logLevel(0)
