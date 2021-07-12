@@ -240,8 +240,10 @@ notify = (msg)->
 fixFlashWeirdness = (src)->
   src
     .on "error", logAndKillError "SVG"
+    .pipe gulp_replace "Architects_Daughter_Regular", "ArchitectsDaughter, sans-serif"
     .pipe gulp_replace "Comic_Sans_MS_Regular", "Comic Sans MS, sans-serif"
     .pipe gulp_replace "Comic_Sans_MS_Bold_Bold", "Comic Sans MS, sans-serif"
+    .pipe gulp_replace "Helsinki_Regular", "Helsinki, sans-serif"
     .pipe gulp_replace "Lato_Hairline_Regular", "Lato, sans-serif\" font-weight=\"200"
     .pipe gulp_replace "Lato_Hairline_Italic", "Lato, sans-serif\" font-weight=\"200"
     .pipe gulp_replace "Lato_Thin_Regular", "Lato, sans-serif\" font-weight=\"200"
@@ -260,6 +262,7 @@ fixFlashWeirdness = (src)->
     .pipe gulp_replace "Lato_Heavy_Italic", "Lato, sans-serif\" font-weight=\"700"
     .pipe gulp_replace "Lato_Black_Regular", "Lato, sans-serif\" font-weight=\"900"
     .pipe gulp_replace "Lato_Black_Italic", "Lato, sans-serif\" font-weight=\"900"
+    .pipe gulp_replace "Rock_Salt_Regular", "RockSalt, sans-serif"
     .pipe gulp_replace /<text clip-path=".*?"/g, '<text'
     .pipe gulp_replace "MEMBER_", "M_"
     .pipe gulp_replace "Layer", "L"
@@ -384,6 +387,7 @@ gulp.task "cd-module:svg", ()->
           @font-face { font-family: "Lato"; font-weight: normal; font-style: italic; src: url("https://d3gc444e269pac.cloudfront.net/fonts/lato/lato-italic.woff2") format("woff2"); }
           @font-face { font-family: "Lato"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/lato/lato-regular.woff2") format("woff2"); }
           @font-face { font-family: "Rock Salt"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/rock-salt/rock-salt.woff") format("woff"); }
+          @font-face { font-family: "RockSalt"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/rock-salt/rock-salt.woff") format("woff"); }
         </style>
       </svg>"""
     .pipe gulp.dest "public"
