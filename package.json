@@ -8,7 +8,7 @@
     "@mr-hope/gulp-sass": "latest",
     "beepbeep": "",
     "browser-sync": "",
-    "chalk": "",
+    "chalk": "^4.1.2",
     "chokidar": "^3.5.1",
     "coffeescript": "",
     "glob": "",
