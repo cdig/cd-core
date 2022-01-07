@@ -1,4 +1,4 @@
-{ sassSync } = require "@mr-hope/gulp-sass"
+{ sass } = require "@mr-hope/gulp-sass"
 beepbeep = require "beepbeep"
 browser_sync = require("browser-sync").create()
 chalk = require "chalk"
@@ -363,7 +363,7 @@ gulp.task "cd-module:scss", ()->
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
-    .pipe sassSync(precision: 2).on "error", logAndKillError "SCSS", false
+    .pipe sass(precision: 2).on "error", logAndKillError "SCSS", false
     .pipe emitMaps()
     .pipe gulp.dest "public"
     .pipe stream "**/*.css"
@@ -431,7 +431,7 @@ svga_scss_source = (cwd, svgName, dest)-> ()->
     .pipe gulp_natural_sort()
     .pipe initMaps()
     .pipe gulp_concat "styles.scss"
-    .pipe sassSync(precision: 2).on "error", logAndKillError "SCSS", false
+    .pipe sass(precision: 2).on "error", logAndKillError "SCSS", false
     .pipe gulp_rename (path)->
       path.basename = svgName
       path
