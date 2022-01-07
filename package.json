@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@mr-hope/gulp-sass": "latest",
+    "@mr-hope/gulp-sass": "^3.0.2",
     "beepbeep": "^1.3.0",
     "browser-sync": "^2.27.7",
     "chalk": "^4.1.2",
