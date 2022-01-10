@@ -29,7 +29,6 @@
     "gulp-sourcemaps": "^3.0.0",
     "gulp-svgmin": "^4.1.0",
     "gulp-terser": "^2.1.0",
-    "merge-stream": "^2.0.0",
-    "svgi": "^1.1.0"
+    "merge-stream": "^2.0.0"
   }
 }

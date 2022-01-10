@@ -26,7 +26,7 @@ gulp_terser = require "gulp-terser"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
 merge_stream = require "merge-stream"
 path = require "path"
-SVGI = require "svgi"
+# SVGI = require "svgi"
 through2 = require "through2"
 
 
@@ -459,8 +459,9 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
     .pipe gulp_replace "</svg>", "</g>\n</svg>"
     .pipe gulp_replace "<svg ", "<svg id=\"svga\" "
     .pipe gulp_replace "<svg", (tag)->
-      svgi = new SVGI this.file.contents.toString()
-      nodeCount = svgi.report().stats.totalNodes
+      # svgi = new SVGI this.file.contents.toString()
+      # nodeCount = svgi.report().stats.totalNodes
+      nodeCount = 0
       tag + " node-count=\"#{nodeCount}\""
   gulp.src svga_paths.wrapper
     .on "error", logAndKillError "SVG"
