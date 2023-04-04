@@ -1,15 +1,12 @@
 { sass } = require "@mr-hope/gulp-sass"
-beepbeep = require "beepbeep"
-browser_sync = require("browser-sync").create()
-chalk = require "chalk"
-chokidar = require "chokidar"
 child_process = require "child_process"
+chokidar = require "chokidar"
 fs = require "fs"
 glob = require "glob"
 gulp = require "gulp"
 gulp_autoprefixer = require "gulp-autoprefixer"
-gulp_clean_css = require "gulp-clean-css"
 gulp_changed = require "gulp-changed"
+gulp_clean_css = require "gulp-clean-css"
 gulp_coffee = require "gulp-coffee"
 gulp_concat = require "gulp-concat"
 gulp_htmlmin = require "gulp-htmlmin"
@@ -24,17 +21,18 @@ gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_terser = require "gulp-terser"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
+http = require "http"
 merge_stream = require "merge-stream"
+os = require "os"
 path = require "path"
-# SVGI = require "svgi"
 through2 = require "through2"
+ws = require "ws"
 
 
 # STATE ###########################################################################################
 
 
 prod = false
-watchingDeploy = false
 watchingPublic = false
 indexName = null
 
@@ -161,21 +159,34 @@ cd_module_svg_plugins = svg_plugins.concat [
 ]
 
 gulp_notify.logLevel(0)
-gulp_notify.on "click", ()->
-  child_process.exec "open -a Terminal"
 
 
 # HELPER FUNCTIONS ################################################################################
 
+
+# Who needs chalk when you can just roll your own ANSI escape sequences
+do ()->
+  global.white = (t)-> t
+  for color, n of red: "31", green: "32", yellow: "33", blue: "34", magenta: "35", cyan: "36"
+    do (color, n)-> global[color] = (t)-> "\x1b[#{n}m" + t + "\x1b[0m"
+
+# Handy little separator for logs
+arrow = blue " → "
+
+# Print out logs with nice-looking timestamps
+log = (msg, ...more)->
+  time = yellow new Date().toLocaleTimeString "en-US", hour12: false
+  console.log if msg? then time + arrow + msg else ""
+  console.log ...more if more.length
+  return msg # pass through
 
 fileContents = (filePath, file)->
   file.contents.toString "utf8"
 
 logAndKillError = (type, full = true)-> (err)->
   pwd = process.cwd() + "/"
-  beepbeep()
-  console.log chalk.red("\n ERROR IN YOUR #{type} 😱")
-  console.log (if full then err.toString() else err.message).replace pwd, ""
+  log red("\n ERROR IN YOUR #{type} 😱")
+  log (if full then err.toString() else err.message).replace pwd, ""
   gulp_notify.onError(
     emitError: true
     icon: false
@@ -202,12 +213,6 @@ delSync = (path)->
       null
     fs.rmdirSync path
 
-openDeploy = ()->
-  child_process.exec "open deploy/all/#{indexName}"
-
-stream = (glob)->
-  cond watchingPublic, browser_sync.stream match: glob
-
 stripPack = (path)->
   path.dirname = path.dirname.replace /.*\/pack\//, ''
   path
@@ -231,11 +236,6 @@ devWrapPageStart = ()->
 
 devWrapPageEnd = ()->
   cond !prod, gulp_replace "</body>", '</div></body>'
-
-notify = (msg)->
-  cond watchingPublic, gulp_notify
-    title: "👍"
-    message: msg
 
 fixFlashWeirdness = (src)->
   src
@@ -297,6 +297,130 @@ watch = (paths, task)->
       runTasks() unless tasksRunning
 
 
+# SERVER ##########################################################################################
+
+
+mimeTypes =
+  css:   "text/css"
+  gif:   "image/gif"
+  html:  "text/html"
+  ico:   "image/x-icon"
+  jpeg:  "image/jpg"
+  jpg:   "image/jpg"
+  js:    "text/javascript"
+  json:  "application/json"
+  m4v:   "video/mp4"
+  map:   "application/json"
+  mp3:   "audio/mpeg"
+  mp4:   "video/mp4"
+  pdf:   "application/pdf"
+  png:   "image/png"
+  svg:   "image/svg+xml"
+  wasm:  "application/wasm"
+  woff:  "application/font-woff"
+  woff2: "font/woff2"
+
+address = os.networkInterfaces().en0?.filter((i)-> i.family is "IPv4")[0]?.address or "localhost"
+port = 333
+serverUrl = "#{address}:#{port}"
+
+reloadScript =  """
+<script>
+  (new WebSocket("ws://#{serverUrl}")).onmessage = e => {
+    e.data == "reload" ? location.reload(true) : console.log("Unexpected message from the live-reload server:", e);
+  }
+</script>
+"""
+
+server = null
+liveServer = null
+
+listening = ()->
+  child_process.execSync "open http://#{serverUrl}"
+  log()
+  log "Live-reload server running at " + green "http://#{serverUrl}"
+  log()
+
+reload = (cb)->
+  liveServer?.send "reload"
+
+respond = (res, code, body, headers)->
+  res.writeHead code, headers; res.end body
+
+serve = (root)->
+  return if server?
+
+  server = http.createServer (req, res)->
+    [url, query] = req.url.split "?"
+    filePath = root + url
+    ext = path.extname(filePath).toLowerCase()[1..]
+
+    if ext is ""
+      if filePath[-1..] isnt "/"
+        return respond res, 302, null, null, location: req.url + "/"
+      else
+        filePath += "/index.html"
+        filePath = filePath.replace "//", "/"
+        ext = "html"
+
+    encoding = if ext is "html" then "utf8" else null
+
+    contentType = mimeTypes[ext]
+
+    unless contentType?
+      log red "Unknown Media Type for: #{req.url}"
+      log "  filePath: #{filePath}"
+      log "  ext: #{ext}"
+      return respond res, 415
+
+    try
+      stats = fs.statSync filePath
+
+    catch
+      return respond res, 404
+
+    if req.headers.range
+      opts = {}
+      [start, end] = req.headers.range.replace("bytes=", "").split("-")
+      start = parseInt(start, 10) or 0
+      end = parseInt(start, 10) or stats.size - 1
+
+      if start >= stats.size or end >= stats.size
+        return respond res, 416, null, "Content-Range": "bytes */#{stats.size}"
+
+      res.writeHead 206,
+        "Content-Type": contentType
+        "Content-Range": "bytes #{start}-#{end}/#{stats.size}"
+        "Content-Length": end - start + 1
+        "Accept-Ranges": "bytes"
+
+      fs.createReadStream filePath, {start, end}
+        .pipe res
+
+    else
+      fs.readFile filePath, encoding, (error, content)->
+        return respond res, 404 if error?.code is "ENOENT"
+        return respond res, 500, error.code if error?
+        if ext is "html"
+          content = content.replace "</head>", "  #{reloadScript}\n</head>"
+        respond res, 200, content, "Content-Type": contentType
+
+  server.on "error", (e)->
+    if e.code is "EADDRINUSE"
+      server.close();
+      port++
+      server.listen port, listening
+    else
+      log "Unhandled server error:", e
+
+  server.listen port, listening
+
+  wss = new ws.Server noServer: true
+  server.on "upgrade", (r,s,h)->
+    wss.handleUpgrade r,s,h, (ws)->
+      liveServer = ws
+
+
 # TASKS: MODULE COMPILATION #######################################################################
 
 
@@ -307,7 +431,6 @@ gulp.task "cd-module:basic-assets", ()->
     .pipe gulp_rename stripPack
     .pipe changed()
     .pipe gulp.dest "public"
-    .pipe stream "**/*.{#{basicAssetTypes},html}"
 
 
 # Compile coffee in source and asset packs, with sourcemaps in dev and uglify in prod
@@ -320,8 +443,6 @@ gulp.task "cd-module:coffee", ()->
     .pipe gulp_coffee()
     .pipe emitMaps()
     .pipe gulp.dest "public"
-    .pipe stream "**/*.js"
-    .pipe notify "Coffee"
 
 
 gulp.task "cd-module:kit:compile", ()->
@@ -346,7 +467,6 @@ gulp.task "cd-module:kit:compile", ()->
       includeAutoGeneratedTags: false
       removeComments: true
     .pipe gulp.dest "public"
-    .pipe notify "HTML"
 
 
 gulp.task "cd-module:kit:fix", ()->
@@ -366,8 +486,6 @@ gulp.task "cd-module:scss", ()->
     .pipe sass(precision: 2).on "error", logAndKillError "SCSS", false
     .pipe emitMaps()
     .pipe gulp.dest "public"
-    .pipe stream "**/*.css"
-    .pipe notify "SCSS"
 
 
 # Clean and minify static SVG files in source and asset packs
@@ -421,8 +539,6 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
       path
     .pipe emitMaps()
     .pipe gulp.dest dest
-    .pipe stream "**/*.js"
-    .pipe notify "Coffee"
 
 
 svga_scss_source = (cwd, svgName, dest)-> ()->
@@ -437,8 +553,6 @@ svga_scss_source = (cwd, svgName, dest)-> ()->
       path
     .pipe emitMaps()
     .pipe gulp.dest dest
-    .pipe stream "**/*.css"
-    .pipe notify "SCSS"
 
 
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
@@ -480,7 +594,6 @@ svga_wrap_svg = (cwd, svgName, dest)-> ()->
       path.basename = svgName
       path
     .pipe gulp.dest dest
-    .pipe notify "SVG"
 
 
 gulp.task "cd-module:svga-check", (cb)->
@@ -582,7 +695,7 @@ gulp.task "deploy:finish", ()->
 
 
 gulp.task "deploy:open", (cb)->
-  openDeploy()
+  child_process.exec "open deploy/all/#{indexName}"
   cb()
 
 
@@ -590,24 +703,21 @@ gulp.task "deploy:create",
   gulp.series "deploy:del", "deploy:copy", "deploy:optim:js", "deploy:optim:css", "deploy:finish"
 
 
-gulp.task "deploy-and-open",
-  gulp.series "deploy:create", "deploy:open"
-
-
 # TASKS: GENERAL ##################################################################################
 
 
+# Delete the ./public folder
 gulp.task "del-public", (cb)->
   delSync "public"
   cb()
 
-
+# Copy anything in ./dev to ./node_modules
 gulp.task "copy-dev", (cb)->
   gulp.src dev_paths.watch, base: "dev"
     .pipe gulp.dest "node_modules"
 
-
-gulp.task "dev:gulp", (cb)->
+# Run the default task of any gulpfiles inside the ./dev folder (eg: the SVGA gulpfile)
+gulp.task "dev-gulp", (cb)->
   gulp.src dev_paths.gulp
     .on "error", logAndKillError "DEV"
     .on "data", (chunk)->
@@ -615,53 +725,48 @@ gulp.task "dev:gulp", (cb)->
       process.chdir folder
       child = child_process.spawn "gulp", ["default"]
       child.stdout.on "data", (data)->
-        console.log chalk.green(folder.replace chunk.base, "") + " " + chalk.white data.toString() if data
+        log green(folder.replace chunk.base, "") + " " + data.toString() if data
       process.chdir "../.."
   cb()
 
 
+# Tell the live server to reload
 gulp.task "reload", (cb)->
-  if watchingDeploy
-    do gulp.series "deploy-and-open"
-  if watchingPublic
-    browser_sync.reload()
+  reload()
   cb()
 
 
+# Start the live-reload server
 gulp.task "serve", (cb)->
-  browser_sync.init
-    ghostMode: false
-    notify: false
-    server: baseDir: "public"
-    ui: false
-    watchOptions: ignoreInitial: true
+  serve "public"
   cb()
 
 
 # TASKS: MODULE MAIN ##############################################################################
 
 
+# Run certain tasks whenever paths change
 gulp.task "cd-module:watch", (cb)->
-  watch module_paths.basicAssets, gulp.series "cd-module:basic-assets"
-  watch module_paths.coffee, gulp.series "cd-module:coffee"
-  watch dev_paths.watch, gulp.series "copy-dev"
-  watch module_paths.kit.watch, gulp.series "cd-module:kit:compile", "reload"
-  watch module_paths.scss, gulp.series "cd-module:scss"
-  watch module_paths.svg, gulp.series "cd-module:svg", "reload"
-  watch module_paths.svga.watch, gulp.series "cd-module:svga:build", "reload"
+  watch dev_paths.watch,          gulp.series "copy-dev", "reload"
+  watch module_paths.basicAssets, gulp.series "cd-module:basic-assets", "reload"
+  watch module_paths.coffee,      gulp.series "cd-module:coffee", "reload"
+  watch module_paths.kit.watch,   gulp.series "cd-module:kit:compile", "reload"
+  watch module_paths.scss,        gulp.series "cd-module:scss", "reload"
+  watch module_paths.svg,         gulp.series "cd-module:svg", "reload"
+  watch module_paths.svga.watch,  gulp.series "cd-module:svga:build", "reload"
   cb()
 
-
+# Create a single build
 gulp.task "cd-module:compile",
   gulp.series "cd-module:svga-check", "del-public", "copy-dev", "cd-module:kit:fix", "cd-module:basic-assets", "cd-module:coffee", "cd-module:scss", "cd-module:svg", "cd-module:svga:build", "cd-module:kit:compile"
 
-
+# Watch and live-serve development builds
 gulp.task "cd-module:dev", (cb)->
   watchingPublic = true
-  do gulp.series "dev:gulp", "cd-module:compile", "cd-module:watch", "serve"
+  do gulp.series "dev-gulp", "cd-module:compile", "cd-module:watch", "serve"
   cb()
 
-
+# Create a single production build
 gulp.task "cd-module:prod", (cb)->
   prod = true
   do gulp.series "cd-module:compile", "deploy:create"
@@ -671,33 +776,33 @@ gulp.task "cd-module:prod", (cb)->
 # TASKS: SVGA MAIN ################################################################################
 
 
+# Run certain tasks whenever paths change
 gulp.task "svga:watch", (cb)->
-  watch dev_paths.watch, gulp.series "copy-dev", "svga:wrap", "reload"
+  watch dev_paths.watch,          gulp.series "copy-dev", "svga:wrap", "reload"
   watch svga_paths.coffee.source, gulp.series "svga:coffee", "reload"
-  watch svga_paths.libs, gulp.series "svga:wrap", "reload"
-  watch svga_paths.scss.source, gulp.series "svga:scss"
-  watch svga_paths.wrapper, gulp.series "svga:wrap", "reload"
-  watch svga_paths.svg, gulp.series "svga:beautify", "svga:wrap", "reload"
+  watch svga_paths.libs,          gulp.series "svga:wrap", "reload"
+  watch svga_paths.scss.source,   gulp.series "svga:scss", "reload"
+  watch svga_paths.svg,           gulp.series "svga:beautify", "svga:wrap", "reload"
+  watch svga_paths.wrapper,       gulp.series "svga:wrap", "reload"
   cb()
 
-
+# Create a single build
 gulp.task "svga:compile",
   gulp.series "del-public", "copy-dev", "svga:build"
 
-
-gulp.task "svga:debug", (cb)->
-  prod = true
-  watchingDeploy = true
-  do gulp.series "dev:gulp", "svga:compile", "svga:watch", "deploy-and-open"
-  cb()
-
-
+# Watch and live-serve development builds
 gulp.task "svga:dev", (cb)->
   watchingPublic = true
-  do gulp.series "dev:gulp", "svga:compile", "svga:watch", "serve"
+  do gulp.series "dev-gulp", "svga:compile", "svga:watch", "serve"
   cb()
 
+# Watch and live-serve production builds
+gulp.task "svga:debug", (cb)->
+  prod = true
+  do gulp.series "dev-gulp", "svga:compile", "svga:watch", "deploy:create", "deploy:open"
+  cb()
 
+# Create a single production build
 gulp.task "svga:prod", (cb)->
   prod = true
   do gulp.series "svga:compile", "deploy:create"
