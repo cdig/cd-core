@@ -69,7 +69,7 @@ module_paths =
     index: "source/index.kit"
     packHtml: "node_modules/cd-module/pack/**/*.html"
     watch: [
-      "source/**/*.{kit,html}"
+      "source/**/*.html"
       "node_modules/cd-module/pack/**/*.{kit,html}"
     ]
   scss: [
