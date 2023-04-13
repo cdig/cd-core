@@ -27,6 +27,7 @@
     "gulp-svgmin": "^4.1.0",
     "gulp-terser": "^2.1.0",
     "merge-stream": "^2.0.0",
+    "please-reload": "latest",
     "ws": "^8.13.0"
   }
 }

@@ -21,12 +21,10 @@ gulp_sourcemaps = require "gulp-sourcemaps"
 gulp_svgmin = require "gulp-svgmin"
 gulp_terser = require "gulp-terser"
 # gulp_using = require "gulp-using" # Uncomment and npm install for debug
-http = require "http"
 merge_stream = require "merge-stream"
-os = require "os"
 path = require "path"
+please_reload = require "please-reload"
 through2 = require "through2"
-ws = require "ws"
 
 
 # STATE ###########################################################################################
@@ -297,128 +295,6 @@ watch = (paths, task)->
       runTasks() unless tasksRunning
 
 
-# SERVER ##########################################################################################
-
-
-mimeTypes =
-  css:   "text/css"
-  gif:   "image/gif"
-  html:  "text/html"
-  ico:   "image/x-icon"
-  jpeg:  "image/jpg"
-  jpg:   "image/jpg"
-  js:    "text/javascript"
-  json:  "application/json"
-  m4v:   "video/mp4"
-  map:   "application/json"
-  mp3:   "audio/mpeg"
-  mp4:   "video/mp4"
-  pdf:   "application/pdf"
-  png:   "image/png"
-  svg:   "image/svg+xml"
-  wasm:  "application/wasm"
-  woff:  "application/font-woff"
-  woff2: "font/woff2"
-
-address = os.networkInterfaces().en0?.filter((i)-> i.family is "IPv4")[0]?.address or "localhost"
-port = 333
-serverUrl = "#{address}:#{port}"
-
-reloadScript =  """
-<script>
-  (new WebSocket("ws://#{serverUrl}")).onmessage = e => {
-    e.data == "reload" ? location.reload(true) : console.log("Unexpected message from the live-reload server:", e);
-  }
-</script>
-"""
-
-server = null
-liveServer = null
-
-listening = ()->
-  child_process.execSync "open http://#{serverUrl}"
-  log()
-  log "Live-reload server running at " + green "http://#{serverUrl}"
-  log()
-
-reload = (cb)->
-  liveServer?.send "reload"
-
-respond = (res, code, body, headers)->
-  res.writeHead code, headers; res.end body
-
-serve = (root)->
-  return if server?
-
-  server = http.createServer (req, res)->
-    [url, query] = req.url.split "?"
-    filePath = root + url
-    ext = path.extname(filePath).toLowerCase()[1..]
-
-    if ext is ""
-      if filePath[-1..] isnt "/"
-        return respond res, 302, null, null, location: req.url + "/"
-      else
-        filePath += "/index.html"
-        filePath = filePath.replace "//", "/"
-        ext = "html"
-
-    encoding = if ext is "html" then "utf8" else null
-
-    contentType = mimeTypes[ext]
-
-    unless contentType?
-      log red "Unknown Media Type for: #{req.url}"
-      log "  filePath: #{filePath}"
-      log "  ext: #{ext}"
-      return respond res, 415
-
-    try
-      stats = fs.statSync filePath
-
-    catch
-      return respond res, 404
-
-    if req.headers.range
-      opts = {}
-      [start, end] = req.headers.range.replace("bytes=", "").split("-")
-      start = parseInt(start, 10) or 0
-      end = parseInt(start, 10) or stats.size - 1
-
-      if start >= stats.size or end >= stats.size
-        return respond res, 416, null, "Content-Range": "bytes */#{stats.size}"
-
-      res.writeHead 206,
-        "Content-Type": contentType
-        "Content-Range": "bytes #{start}-#{end}/#{stats.size}"
-        "Content-Length": end - start + 1
-        "Accept-Ranges": "bytes"
-
-      fs.createReadStream filePath, {start, end}
-        .pipe res
-
-    else
-      fs.readFile filePath, encoding, (error, content)->
-        return respond res, 404 if error?.code is "ENOENT"
-        return respond res, 500, error.code if error?
-        if ext is "html"
-          content = content.replace "</head>", "  #{reloadScript}\n</head>"
-        respond res, 200, content, "Content-Type": contentType
-
-  server.on "error", (e)->
-    if e.code is "EADDRINUSE"
-      server.close();
-      port++
-      server.listen port, listening
-    else
-      log "Unhandled server error:", e
-
-  server.listen port, listening
-
-  wss = new ws.Server noServer: true
-  server.on "upgrade", (r,s,h)->
-    wss.handleUpgrade r,s,h, (ws)->
-      liveServer = ws
 
 
 # TASKS: MODULE COMPILATION #######################################################################
@@ -745,15 +621,15 @@ gulp.task "dev-gulp", (cb)->
   cb()
 
 
-# Tell the live server to reload
+# Tell the server to reload
 gulp.task "reload", (cb)->
-  reload()
+  please_reload.reload()
   cb()
 
 
-# Start the live-reload server
+# Start the server
 gulp.task "serve", (cb)->
-  serve "public"
+  await please_reload.serve "public"
   cb()
 
 
