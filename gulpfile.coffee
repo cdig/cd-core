@@ -69,7 +69,6 @@ module_paths =
       "node_modules/take-and-make/dist/take-and-make.js"
       "node_modules/normalize.css/normalize.css"
       "node_modules/cd-reset/dist/cd-reset.css"
-      "node_modules/fonts/dist/fonts.css"
     ]
     index: "source/index.kit"
     packHtml: "node_modules/cd-module/pack/**/*.html"
@@ -98,7 +97,6 @@ svga_paths =
     source: "source/**/*.coffee"
   libs: [
     "node_modules/take-and-make/dist/take-and-make.js"
-    "node_modules/fonts/dist/fonts.css"
     "node_modules/svga/dist/svga.css"
     "node_modules/svga/dist/svga.js"
   ]
@@ -388,20 +386,8 @@ gulp.task "cd-module:svg", ()->
     # svgmin stabilizes after 2 runs
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
     .pipe gulp_svgmin full: true, plugins: cd_module_svg_plugins
-    # Keep this in sync with https://github.com/cdig/fonts
     .pipe gulp_replace "<svg", '<svg text-rendering="geometricPrecision"'
-    .pipe gulp_replace '</svg>', """
-        <style>
-          @font-face { font-family: "Architect's Daughter"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/architects-daughter/architects-daughter.woff2") format("woff2"); }
-          @font-face { font-family: "ArchitectsDaughter"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/architects-daughter/architects-daughter.woff2") format("woff2"); }
-          @font-face { font-family: "Helsinki"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/helsinki/helsinki.woff"); }
-          @font-face { font-family: "Lato"; font-weight: bold; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/lato/lato-bold.woff2") format("woff2"); }
-          @font-face { font-family: "Lato"; font-weight: normal; font-style: italic; src: url("https://d3gc444e269pac.cloudfront.net/fonts/lato/lato-italic.woff2") format("woff2"); }
-          @font-face { font-family: "Lato"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/lato/lato-regular.woff2") format("woff2"); }
-          @font-face { font-family: "Rock Salt"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/rock-salt/rock-salt.woff") format("woff"); }
-          @font-face { font-family: "RockSalt"; font-weight: normal; font-style: normal; src: url("https://d3gc444e269pac.cloudfront.net/fonts/rock-salt/rock-salt.woff") format("woff"); }
-        </style>
-      </svg>"""
+    .pipe gulp_replace /<svg (.*?)>/, '<svg $1><link xmlns="http://www.w3.org/1999/xhtml" href="https://fonts.lunchboxsessions.com/fonts.css" rel="stylesheet"/>'
     .pipe gulp.dest publicFolder
 
 
