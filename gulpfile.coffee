@@ -104,6 +104,7 @@ svga_paths =
     libs: "node_modules/svga/lib/_vars.scss"
     source: "source/**/*.scss"
   svg: "source/**/*.svg"
+  models: "source/**/*.glb"
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
@@ -420,7 +421,6 @@ svga_coffee_source = (cwd, svgName, dest)-> ()->
     .pipe emitMaps()
     .pipe gulp.dest dest
 
-
 svga_scss_source = (cwd, svgName, dest)-> ()->
   gulp.src [].concat svga_paths.scss.libs, "#{cwd}/#{svga_paths.scss.source}"
     .on "error", logAndKillError "SCSS", false
@@ -434,6 +434,30 @@ svga_scss_source = (cwd, svgName, dest)-> ()->
     .pipe emitMaps()
     .pipe gulp.dest dest
 
+# Transfers 3d models (.glb) from source to public/svga-models and removes any in the public directory that no longer exist in source
+svga_transfer_models = (cwd, dest)-> ()->
+  sourceFullPath = path.join(cwd, svga_paths.models)
+  
+  # 1. Reconciliation: Delete orphans in 'dest' that aren't in 'source'
+  if fs.existsSync(dest)
+    # Get all .glb files in destination
+    destFiles = glob.sync("**/*.glb", { cwd: dest })
+    
+    # Get all .glb files in source (adjust path logic to match your glob)
+    sourceFiles = glob.sync("**/*.glb", { cwd: path.dirname(sourceFullPath) })
+
+    for file in destFiles
+      # If the file exists in dest but NOT in source, kill it
+      if file not in sourceFiles
+        fileToDelete = path.join(dest, file)
+        fs.unlinkSync(fileToDelete)
+        console.log "Cleaned orphan model: #{file}"
+
+  # 2. Efficient Copy: Only move new/changed files
+  gulp.src sourceFullPath
+    .on "error", logAndKillError "TRANSFER_GLB_MODELS"
+    .pipe gulp_changed dest 
+    .pipe gulp.dest dest
 
 svga_wrap_svg = (cwd, svgName, dest)-> ()->
   # We wrap this up in our current scope so that multiple SVGs being processed in parallel don't fight over the rootMade global
@@ -512,11 +536,12 @@ gulp.task "cd-module:svga:build",
 
 gulp.task "svga:beautify", svga_beautify_svg ".", "index", publicFolder
 gulp.task "svga:coffee", svga_coffee_source ".", "index", publicFolder + "/svga-js"
-gulp.task "svga:scss", svga_scss_source ".", "index", publicFolder + "/svga-css"
+gulp.task "svga:scss", svga_scss_source ".", "index", publicFolder + "/svga-css" 
+gulp.task "svga:models", svga_transfer_models ".", publicFolder + "/svga-models"
 gulp.task "svga:wrap", svga_wrap_svg ".", "index", publicFolder
 
 gulp.task "svga:build",
-  gulp.series "svga:beautify", "svga:coffee", "svga:scss", "svga:wrap"
+  gulp.series "svga:beautify", "svga:coffee", "svga:scss", "svga:wrap", "svga:models"
 
 
 # TASKS: DEPLOY ###################################################################################
@@ -615,7 +640,6 @@ gulp.task "reload", (cb)->
   please_reload.reload()
   cb()
 
-
 # Start the server
 gulp.task "serve", (cb)->
   await please_reload.serve publicFolder
@@ -664,6 +688,7 @@ gulp.task "svga:watch", (cb)->
   watch svga_paths.scss.source,   gulp.series "svga:scss", "reload"
   watch svga_paths.svg,           gulp.series "svga:beautify", "svga:wrap", "reload"
   watch svga_paths.wrapper,       gulp.series "svga:wrap", "reload"
+  watch svga_paths.models,        gulp.series "svga:models", "reload"
   cb()
 
 # Create a single build
