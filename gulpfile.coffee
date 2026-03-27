@@ -104,7 +104,7 @@ svga_paths =
     libs: "node_modules/svga/lib/_vars.scss"
     source: "source/**/*.scss"
   svg: "source/**/*.svg"
-  models: "source/models/*.{glb,png}"
+  models: "source/models/*.{glb,png,hdr}"
   wrapper: "node_modules/svga/dist/index.html"
 
 svg_plugins = [
