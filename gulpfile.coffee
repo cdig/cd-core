@@ -440,11 +440,11 @@ svga_transfer_models = (cwd, dest)-> ()->
   
   # 1. Reconciliation: Delete orphans in 'dest' that aren't in 'source'
   if fs.existsSync(dest)
-    # Get all .glb files in destination
-    destFiles = glob.sync("**/*.glb", { cwd: dest })
+    # Get all .png,hdr,glb files in destination
+    destFiles = glob.sync("**/*.{glb,png,hdr}", { cwd: dest })
     
-    # Get all .glb files in source (adjust path logic to match your glob)
-    sourceFiles = glob.sync("**/*.glb", { cwd: path.dirname(sourceFullPath) })
+    # Get all .png,hdr,glb files in source (adjust path logic to match your glob)
+    sourceFiles = glob.sync("**/*.{glb,png,hdr}", { cwd: path.dirname(sourceFullPath) })
 
     for file in destFiles
       # If the file exists in dest but NOT in source, kill it
