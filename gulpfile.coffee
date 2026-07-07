@@ -712,3 +712,43 @@ gulp.task "svga:prod", (cb)->
   prod = true
   do gulp.series "svga:compile", "deploy:create"
   cb()
+
+# TASKS: SVGA-3D ALIASES ##########################################################################
+# These aliases support the svga-3d naming convention for backward compatibility
+
+gulp.task "svga-3d:beautify",
+  gulp.series "svga:beautify"
+
+gulp.task "svga-3d:coffee",
+  gulp.series "svga:coffee"
+
+gulp.task "svga-3d:scss",
+  gulp.series "svga:scss"
+
+gulp.task "svga-3d:models",
+  gulp.series "svga:models"
+
+gulp.task "svga-3d:wrap",
+  gulp.series "svga:wrap"
+
+gulp.task "svga-3d:build",
+  gulp.series "svga:build"
+
+gulp.task "svga-3d:watch", (cb)->
+  do gulp.series "dev-gulp", "svga:compile", "svga:watch", "serve"
+  cb()
+
+gulp.task "svga-3d:dev", (cb)->
+  watchingPublic = true
+  do gulp.series "dev-gulp", "svga:compile", "svga:watch", "serve"
+  cb()
+
+gulp.task "svga-3d:debug", (cb)->
+  prod = true
+  do gulp.series "dev-gulp", "svga:compile", "svga:watch", "deploy:create", "deploy:open"
+  cb()
+
+gulp.task "svga-3d:prod", (cb)->
+  prod = true
+  do gulp.series "svga:compile", "deploy:create"
+  cb()
